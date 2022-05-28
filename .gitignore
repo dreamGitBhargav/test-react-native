@@ -29,7 +29,13 @@ project.xcworkspace
 /packages/rn-tester/android/app/gradle/
 /packages/rn-tester/android/app/gradlew
 /packages/rn-tester/android/app/gradlew.bat
-/ReactAndroid/build/
+/ReactAndroid/build/downloads
+/ReactAndroid/build/generated
+/ReactAndroid/build/intermediates
+/ReactAndroid/build/publications
+/ReactAndroid/build/react-ndk
+/ReactAndroid/build/third-party-ndk
+/ReactAndroid/build/tmp
 /ReactAndroid/gradle/
 /ReactAndroid/gradlew
 /ReactAndroid/gradlew.bat
