@@ -229,7 +229,7 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
                     mAnimatedFrameCallback);
               }
             } catch (Exception ex) {
-              throw new RuntimeException(ex);
+              //throw new RuntimeException(ex);
             }
           }
         };
