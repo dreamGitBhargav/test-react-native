@@ -222,10 +222,12 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
               // animations and no outstanding tasks on the operations queue. Apparently frame
               // callbacks can only be posted from the UI thread and therefore we cannot schedule
               // them directly from other threads.
-              Assertions.assertNotNull(mReactChoreographer)
+              if(mReactChoreographer != null){
+                Assertions.assertNotNull(mReactChoreographer)
                   .postFrameCallback(
-                      ReactChoreographer.CallbackType.NATIVE_ANIMATED_MODULE,
-                      mAnimatedFrameCallback);
+                    ReactChoreographer.CallbackType.NATIVE_ANIMATED_MODULE,
+                    mAnimatedFrameCallback);
+              }
             } catch (Exception ex) {
               throw new RuntimeException(ex);
             }
