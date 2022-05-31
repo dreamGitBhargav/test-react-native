@@ -113,14 +113,9 @@ public class EventDispatcherImpl implements EventDispatcher, LifecycleEventListe
   public void dispatchEvent(Event event) {
     Assertions.assertCondition(event.isInitialized(), "Dispatched event hasn't been initialized");
 
-    try{
-      for (EventDispatcherListener listener : mListeners) {
-        listener.onEventDispatch(event);
-      }
-    } catch (Exception e){
-
+    for (EventDispatcherListener listener : mListeners) {
+      listener.onEventDispatch(event);
     }
-
 
     synchronized (mEventsStagingLock) {
       mEventStaging.add(event);
