@@ -15,7 +15,6 @@ const {execSync} = require('child_process');
 
 const SDKS_DIR = path.normalize(path.join(__dirname, '..', '..', 'sdks'));
 const HERMES_DIR = path.join(SDKS_DIR, 'hermes');
-const DEFAULT_HERMES_TAG = 'main';
 const HERMES_TAG_FILE_PATH = path.join(SDKS_DIR, '.hermesversion');
 const HERMES_TARBALL_BASE_URL = 'https://github.com/facebook/hermes/tarball/';
 const HERMES_TARBALL_DOWNLOAD_DIR = path.join(SDKS_DIR, 'download');
@@ -158,9 +157,12 @@ function copyPodSpec() {
   );
 }
 
-function shouldBuildHermesFromSource() {
-  const hermesTag = readHermesTag();
-  return hermesTag === DEFAULT_HERMES_TAG;
+function isTestingAgainstLocalHermesTarball() {
+  return 'HERMES_ENGINE_TARBALL_PATH' in process.env;
+}
+
+function shouldBuildHermesFromSource(isInCI) {
+  return !isTestingAgainstLocalHermesTarball() && isInCI;
 }
 
 function shouldUsePrebuiltHermesC(os) {

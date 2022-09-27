@@ -44,6 +44,8 @@ const {
   UnsupportedTypeScriptTypeAnnotationParserError,
   UnsupportedFunctionParamTypeAnnotationParserError,
   UnsupportedFunctionReturnTypeAnnotationParserError,
+  UnsupportedTypeScriptEnumDeclarationParserError,
+  UnsupportedTypeScriptUnionTypeAnnotationParserError,
   UnsupportedModulePropertyParserError,
   UnsupportedObjectPropertyTypeAnnotationParserError,
   UnsupportedObjectPropertyValueTypeAnnotationParserError,
@@ -61,6 +63,82 @@ function nullGuard<T>(fn: () => T): ?T {
   return fn();
 }
 
+function translateArrayTypeAnnotation(
+  hasteModuleName: string,
+  types: TypeDeclarationMap,
+  aliasMap: {...NativeModuleAliasMap},
+  cxxOnly: boolean,
+  tsArrayType: 'Array' | 'ReadonlyArray',
+  tsElementType: $FlowFixMe,
+  nullable: $FlowFixMe,
+): Nullable<NativeModuleTypeAnnotation> {
+  try {
+    /**
+     * TODO(T72031674): Migrate all our NativeModule specs to not use
+     * invalid Array ElementTypes. Then, make the elementType a required
+     * parameter.
+     */
+    const [elementType, isElementTypeNullable] = unwrapNullable(
+      translateTypeAnnotation(
+        hasteModuleName,
+        tsElementType,
+        types,
+        aliasMap,
+        /**
+         * TODO(T72031674): Ensure that all ParsingErrors that are thrown
+         * while parsing the array element don't get captured and collected.
+         * Why? If we detect any parsing error while parsing the element,
+         * we should default it to null down the line, here. This is
+         * the correct behaviour until we migrate all our NativeModule specs
+         * to be parseable.
+         */
+        nullGuard,
+        cxxOnly,
+      ),
+    );
+
+    if (elementType.type === 'VoidTypeAnnotation') {
+      throw new UnsupportedArrayElementTypeAnnotationParserError(
+        hasteModuleName,
+        tsElementType,
+        tsArrayType,
+        'void',
+      );
+    }
+
+    if (elementType.type === 'PromiseTypeAnnotation') {
+      throw new UnsupportedArrayElementTypeAnnotationParserError(
+        hasteModuleName,
+        tsElementType,
+        tsArrayType,
+        'Promise',
+      );
+    }
+
+    if (elementType.type === 'FunctionTypeAnnotation') {
+      throw new UnsupportedArrayElementTypeAnnotationParserError(
+        hasteModuleName,
+        tsElementType,
+        tsArrayType,
+        'FunctionTypeAnnotation',
+      );
+    }
+
+    const finalTypeAnnotation: NativeModuleArrayTypeAnnotation<
+      Nullable<NativeModuleBaseTypeAnnotation>,
+    > = {
+      type: 'ArrayTypeAnnotation',
+      elementType: wrapNullable(isElementTypeNullable, elementType),
+    };
+
+    return wrapNullable(nullable, finalTypeAnnotation);
+  } catch (ex) {
+    return wrapNullable(nullable, {
+      type: 'ArrayTypeAnnotation',
+    });
+  }
+}
+
 function translateTypeAnnotation(
   hasteModuleName: string,
   /**
@@ -76,6 +154,48 @@ function translateTypeAnnotation(
     resolveTypeAnnotation(typeScriptTypeAnnotation, types);
 
   switch (typeAnnotation.type) {
+    case 'TSParenthesizedType': {
+      return translateTypeAnnotation(
+        hasteModuleName,
+        typeAnnotation.typeAnnotation,
+        types,
+        aliasMap,
+        tryParse,
+        cxxOnly,
+      );
+    }
+    case 'TSArrayType': {
+      return translateArrayTypeAnnotation(
+        hasteModuleName,
+        types,
+        aliasMap,
+        cxxOnly,
+        'Array',
+        typeAnnotation.elementType,
+        nullable,
+      );
+    }
+    case 'TSTypeOperator': {
+      if (
+        typeAnnotation.operator === 'readonly' &&
+        typeAnnotation.typeAnnotation.type === 'TSArrayType'
+      ) {
+        return translateArrayTypeAnnotation(
+          hasteModuleName,
+          types,
+          aliasMap,
+          cxxOnly,
+          'ReadonlyArray',
+          typeAnnotation.typeAnnotation.elementType,
+          nullable,
+        );
+      } else {
+        throw new UnsupportedTypeScriptGenericParserError(
+          hasteModuleName,
+          typeAnnotation,
+        );
+      }
+    }
     case 'TSTypeReference': {
       switch (typeAnnotation.typeName.name) {
         case 'RootTag': {
@@ -101,71 +221,15 @@ function translateTypeAnnotation(
             typeAnnotation,
           );
 
-          try {
-            /**
-             * TODO(T72031674): Migrate all our NativeModule specs to not use
-             * invalid Array ElementTypes. Then, make the elementType a required
-             * parameter.
-             */
-            const [elementType, isElementTypeNullable] = unwrapNullable(
-              translateTypeAnnotation(
-                hasteModuleName,
-                typeAnnotation.typeParameters.params[0],
-                types,
-                aliasMap,
-                /**
-                 * TODO(T72031674): Ensure that all ParsingErrors that are thrown
-                 * while parsing the array element don't get captured and collected.
-                 * Why? If we detect any parsing error while parsing the element,
-                 * we should default it to null down the line, here. This is
-                 * the correct behaviour until we migrate all our NativeModule specs
-                 * to be parseable.
-                 */
-                nullGuard,
-                cxxOnly,
-              ),
-            );
-
-            if (elementType.type === 'VoidTypeAnnotation') {
-              throw new UnsupportedArrayElementTypeAnnotationParserError(
-                hasteModuleName,
-                typeAnnotation.typeParameters.params[0],
-                typeAnnotation.type,
-                'void',
-              );
-            }
-
-            if (elementType.type === 'PromiseTypeAnnotation') {
-              throw new UnsupportedArrayElementTypeAnnotationParserError(
-                hasteModuleName,
-                typeAnnotation.typeParameters.params[0],
-                typeAnnotation.type,
-                'Promise',
-              );
-            }
-
-            if (elementType.type === 'FunctionTypeAnnotation') {
-              throw new UnsupportedArrayElementTypeAnnotationParserError(
-                hasteModuleName,
-                typeAnnotation.typeParameters.params[0],
-                typeAnnotation.type,
-                'FunctionTypeAnnotation',
-              );
-            }
-
-            const finalTypeAnnotation: NativeModuleArrayTypeAnnotation<
-              Nullable<NativeModuleBaseTypeAnnotation>,
-            > = {
-              type: 'ArrayTypeAnnotation',
-              elementType: wrapNullable(isElementTypeNullable, elementType),
-            };
-
-            return wrapNullable(nullable, finalTypeAnnotation);
-          } catch (ex) {
-            return wrapNullable(nullable, {
-              type: 'ArrayTypeAnnotation',
-            });
-          }
+          return translateArrayTypeAnnotation(
+            hasteModuleName,
+            types,
+            aliasMap,
+            cxxOnly,
+            typeAnnotation.type,
+            typeAnnotation.typeParameters.params[0],
+            nullable,
+          );
         }
         case 'Readonly': {
           assertGenericTypeAnnotationHasExactlyOneTypeParameter(
@@ -213,6 +277,33 @@ function translateTypeAnnotation(
           });
         }
         default: {
+          const maybeEumDeclaration = types[typeAnnotation.typeName.name];
+          if (
+            cxxOnly &&
+            maybeEumDeclaration &&
+            maybeEumDeclaration.type === 'TSEnumDeclaration'
+          ) {
+            const memberType = maybeEumDeclaration.members[0].initializer
+              ? maybeEumDeclaration.members[0].initializer.type
+                  .replace('NumericLiteral', 'NumberTypeAnnotation')
+                  .replace('StringLiteral', 'StringTypeAnnotation')
+              : 'StringTypeAnnotation';
+            if (
+              memberType === 'NumberTypeAnnotation' ||
+              memberType === 'StringTypeAnnotation'
+            ) {
+              return wrapNullable(nullable, {
+                type: 'EnumDeclaration',
+                memberType: memberType,
+              });
+            } else {
+              throw new UnsupportedTypeScriptEnumDeclarationParserError(
+                hasteModuleName,
+                typeAnnotation,
+                memberType,
+              );
+            }
+          }
           throw new UnsupportedTypeScriptGenericParserError(
             hasteModuleName,
             typeAnnotation,
@@ -366,6 +457,33 @@ function translateTypeAnnotation(
           cxxOnly,
         ),
       );
+    }
+    case 'TSUnionType': {
+      if (cxxOnly) {
+        // Remap literal names
+        const unionTypes = typeAnnotation.types
+          .map(item =>
+            item.literal
+              ? item.literal.type
+                  .replace('NumericLiteral', 'NumberTypeAnnotation')
+                  .replace('StringLiteral', 'StringTypeAnnotation')
+              : 'ObjectTypeAnnotation',
+          )
+          .filter((value, index, self) => self.indexOf(value) === index);
+        // Only support unionTypes of the same kind
+        if (unionTypes.length > 1) {
+          throw new UnsupportedTypeScriptUnionTypeAnnotationParserError(
+            hasteModuleName,
+            typeAnnotation,
+            unionTypes,
+          );
+        }
+        return wrapNullable(nullable, {
+          type: 'UnionTypeAnnotation',
+          memberType: unionTypes[0],
+        });
+      }
+      // Fallthrough
     }
     case 'TSUnknownKeyword': {
       if (cxxOnly) {
@@ -551,7 +669,7 @@ function buildPropertySchema(
   };
 }
 
-function isModuleInterface(node) {
+function isModuleInterface(node: $FlowFixMe) {
   return (
     node.type === 'TSInterfaceDeclaration' &&
     node.extends.length === 1 &&

@@ -17,6 +17,7 @@ import type {
   NativeModulePropertyShape,
   NativeModuleFunctionTypeAnnotation,
   NativeModuleParamTypeAnnotation,
+  NativeModuleTypeAnnotation,
 } from '../../CodegenSchema';
 
 import type {AliasResolver} from './Utils';
@@ -28,21 +29,33 @@ type FilesOutput = Map<string, string>;
 const HostFunctionTemplate = ({
   hasteModuleName,
   methodName,
-  isVoid,
+  returnTypeAnnotation,
   args,
 }: $ReadOnly<{
   hasteModuleName: string,
   methodName: string,
-  isVoid: boolean,
+  returnTypeAnnotation: Nullable<NativeModuleTypeAnnotation>,
   args: Array<string>,
 }>) => {
+  const isNullable = returnTypeAnnotation.type === 'NullableTypeAnnotation';
+  const isVoid = returnTypeAnnotation.type === 'VoidTypeAnnotation';
   const methodCallArgs = ['rt', ...args].join(', ');
-  const methodCall = `static_cast<${hasteModuleName}CxxSpecJSI *>(&turboModule)->${methodName}(${methodCallArgs});`;
+  const methodCall = `static_cast<${hasteModuleName}CxxSpecJSI *>(&turboModule)->${methodName}(${methodCallArgs})`;
 
   return `static jsi::Value __hostFunction_${hasteModuleName}CxxSpecJSI_${methodName}(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {${
-    isVoid ? `\n  ${methodCall}` : ''
+    isVoid
+      ? `\n  ${methodCall};`
+      : isNullable
+      ? `\n  auto result = ${methodCall};`
+      : ''
   }
-  return ${isVoid ? 'jsi::Value::undefined();' : methodCall}
+  return ${
+    isVoid
+      ? 'jsi::Value::undefined()'
+      : isNullable
+      ? 'result ? jsi::Value(std::move(*result)) : jsi::Value::null()'
+      : methodCall
+  };
 }`;
 };
 
@@ -114,7 +127,7 @@ function serializeArg(
     realTypeAnnotation = resolveAlias(realTypeAnnotation.name);
   }
 
-  function wrap(callback) {
+  function wrap(callback: (val: string) => string) {
     const val = `args[${index}]`;
     const expression = callback(val);
 
@@ -140,6 +153,17 @@ function serializeArg(
       return wrap(val => `${val}.asString(rt)`);
     case 'BooleanTypeAnnotation':
       return wrap(val => `${val}.asBool()`);
+    case 'EnumDeclaration':
+      switch (realTypeAnnotation.memberType) {
+        case 'NumberTypeAnnotation':
+          return wrap(val => `${val}.asNumber()`);
+        case 'StringTypeAnnotation':
+          return wrap(val => `${val}.asString(rt)`);
+        default:
+          throw new Error(
+            `Unknown enum type for "${arg.name}, found: ${realTypeAnnotation.type}"`,
+          );
+      }
     case 'NumberTypeAnnotation':
       return wrap(val => `${val}.asNumber()`);
     case 'FloatTypeAnnotation':
@@ -154,6 +178,19 @@ function serializeArg(
       return wrap(val => `${val}.asObject(rt).asFunction(rt)`);
     case 'GenericObjectTypeAnnotation':
       return wrap(val => `${val}.asObject(rt)`);
+    case 'UnionTypeAnnotation':
+      switch (typeAnnotation.memberType) {
+        case 'NumberTypeAnnotation':
+          return wrap(val => `${val}.asNumber()`);
+        case 'ObjectTypeAnnotation':
+          return wrap(val => `${val}.asObject(rt)`);
+        case 'StringTypeAnnotation':
+          return wrap(val => `${val}.asString(rt)`);
+        default:
+          throw new Error(
+            `Unsupported union member type for param  "${arg.name}, found: ${realTypeAnnotation.memberType}"`,
+          );
+      }
     case 'ObjectTypeAnnotation':
       return wrap(val => `${val}.asObject(rt)`);
     case 'MixedTypeAnnotation':
@@ -173,13 +210,11 @@ function serializePropertyIntoHostFunction(
 ): string {
   const [propertyTypeAnnotation] =
     unwrapNullable<NativeModuleFunctionTypeAnnotation>(property.typeAnnotation);
-  const isVoid =
-    propertyTypeAnnotation.returnTypeAnnotation.type === 'VoidTypeAnnotation';
 
   return HostFunctionTemplate({
     hasteModuleName,
     methodName: property.name,
-    isVoid,
+    returnTypeAnnotation: propertyTypeAnnotation.returnTypeAnnotation,
     args: propertyTypeAnnotation.params.map((p, i) =>
       serializeArg(p, i, resolveAlias),
     ),

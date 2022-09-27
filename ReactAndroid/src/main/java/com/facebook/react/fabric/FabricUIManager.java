@@ -166,6 +166,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
   @NonNull private final MountingManager mMountingManager;
   @NonNull private final EventDispatcher mEventDispatcher;
   @NonNull private final MountItemDispatcher mMountItemDispatcher;
+  @NonNull private final ViewManagerRegistry mViewManagerRegistry;
 
   @NonNull private final EventBeatManager mEventBeatManager;
 
@@ -226,6 +227,9 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     mShouldDeallocateEventDispatcher = false;
     mEventBeatManager = eventBeatManager;
     mReactApplicationContext.addLifecycleEventListener(this);
+
+    mViewManagerRegistry = viewManagerRegistry;
+    mReactApplicationContext.registerComponentCallbacks(viewManagerRegistry);
   }
 
   public FabricUIManager(
@@ -244,6 +248,9 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     mShouldDeallocateEventDispatcher = true;
     mEventBeatManager = eventBeatManager;
     mReactApplicationContext.addLifecycleEventListener(this);
+
+    mViewManagerRegistry = viewManagerRegistry;
+    mReactApplicationContext.registerComponentCallbacks(viewManagerRegistry);
   }
 
   // TODO (T47819352): Rename this to startSurface for consistency with xplat/iOS
@@ -258,8 +265,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
         new IllegalViewOperationException(
             "Do not call addRootView in Fabric; it is unsupported. Call startSurface instead."));
 
-    final int rootTag = ReactRootViewTagGenerator.getNextRootViewTag();
     ReactRoot reactRootView = (ReactRoot) rootView;
+    final int rootTag = reactRootView.getRootViewTag();
 
     ThemedReactContext reactContext =
         new ThemedReactContext(
@@ -287,7 +294,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
    * @return a {@link ReadableMap} that contains metadata associated to the React Component that
    *     rendered the Android View received as a parameter. For more details about the keys stored
    *     in the {@link ReadableMap} refer to the "getInspectorDataForInstance" method from
-   *     com/facebook/react/fabric/jni/Binding.cpp file.
+   *     jni/react/fabric/Binding.cpp file.
    */
   @UiThread
   @ThreadConfined(UI)
@@ -315,7 +322,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
       final WritableMap initialProps,
       int widthMeasureSpec,
       int heightMeasureSpec) {
-    final int rootTag = ReactRootViewTagGenerator.getNextRootViewTag();
+    final int rootTag = ((ReactRoot) rootView).getRootViewTag();
     Context context = rootView.getContext();
     ThemedReactContext reactContext =
         new ThemedReactContext(mReactApplicationContext, context, moduleName, rootTag);
@@ -451,6 +458,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     mEventDispatcher.removeBatchEventDispatchedListener(mEventBeatManager);
     mEventDispatcher.unregisterEventEmitter(FABRIC);
 
+    mReactApplicationContext.unregisterComponentCallbacks(mViewManagerRegistry);
+
     // Remove lifecycle listeners (onHostResume, onHostPause) since the FabricUIManager is going
     // away. Then stop the mDispatchUIFrameCallback false will cause the choreographer
     // callbacks to stop firing.
@@ -520,11 +529,16 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
   }
 
   @SuppressWarnings("unused")
-  public int getColor(int surfaceId, ReadableMap platformColor) {
+  public int getColor(int surfaceId, String[] resourcePaths) {
     ThemedReactContext context =
         mMountingManager.getSurfaceManagerEnforced(surfaceId, "getColor").getContext();
-    Integer color = ColorPropConverter.getColor(platformColor, context);
-    return color != null ? color : 0;
+    for (String resourcePath : resourcePaths) {
+      Integer color = ColorPropConverter.resolveResourcePath(context, resourcePath);
+      if (color != null) {
+        return color;
+      }
+    }
+    return 0;
   }
 
   @SuppressWarnings("unused")
@@ -797,9 +811,29 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
 
     if (shouldSchedule) {
       mMountItemDispatcher.addMountItem(mountItem);
+      Runnable runnable =
+          new Runnable() {
+            @Override
+            public void run() {
+              mMountItemDispatcher.tryDispatchMountItems();
+            }
+          };
       if (UiThreadUtil.isOnUiThread()) {
-        // We only read these flags on the UI thread.
-        mMountItemDispatcher.tryDispatchMountItems();
+        runnable.run();
+      } else {
+        // The Choreographer will dispatch any mount items,
+        // but it only gets called at the /beginning/ of the
+        // frame - it has no idea if, or when, there is actually work scheduled. That means if we
+        // have a big chunk of work
+        // scheduled but the scheduling happens 1ms after the
+        // start of a UI frame, we'll miss out on 15ms of time
+        // to perform the work (assuming a 16ms frame).
+        // The DispatchUIFrameCallback still has value because of
+        // the PreMountItems that we need to process at a lower
+        // priority.
+        if (ReactFeatureFlags.enableEarlyScheduledMountItemExecution) {
+          UiThreadUtil.runOnUiThread(runnable);
+        }
       }
     }
 

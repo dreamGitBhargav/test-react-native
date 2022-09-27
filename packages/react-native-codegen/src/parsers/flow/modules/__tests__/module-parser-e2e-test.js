@@ -712,7 +712,7 @@ describe('Flow Module Parser', () => {
       const RETURN_TYPE_DESCRIPTION = IS_RETURN_TYPE_NULLABLE
         ? 'a nullable'
         : 'a non-nullable';
-      const annotateRet = retType =>
+      const annotateRet = (retType: string) =>
         IS_RETURN_TYPE_NULLABLE ? `?${retType}` : retType;
 
       function parseReturnType(
@@ -816,8 +816,7 @@ describe('Flow Module Parser', () => {
             describe('Primitive Element Types', () => {
               PRIMITIVES.forEach(([FLOW_TYPE, PARSED_TYPE_NAME]) => {
                 it(`should parse methods that have ${RETURN_TYPE_DESCRIPTION} return of type 'Array<${FLOW_TYPE}>'`, () => {
-                  const [elementType, module] =
-                    parseArrayElementReturnType(FLOW_TYPE);
+                  const [elementType] = parseArrayElementReturnType(FLOW_TYPE);
                   expect(elementType.type).toBe(PARSED_TYPE_NAME);
                 });
               });
@@ -927,7 +926,7 @@ describe('Flow Module Parser', () => {
                   ? 'an optional'
                   : 'a required';
 
-              function annotateProp(propName, propType) {
+              function annotateProp(propName: string, propType: string) {
                 if (nullable && optional) {
                   return `${propName}?: ?${propType}`;
                 }
@@ -1229,7 +1228,7 @@ describe('Flow Module Parser', () => {
   });
 });
 
-function parseModule(source) {
+function parseModule(source: string) {
   const schema = parseString(source, `${MODULE_NAME}.js`);
   const module = schema.modules.NativeFoo;
   invariant(

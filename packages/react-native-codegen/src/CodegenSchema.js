@@ -80,6 +80,7 @@ export type ComponentShape = $ReadOnly<{
   events: $ReadOnlyArray<EventTypeShape>,
   props: $ReadOnlyArray<NamedShape<PropTypeAnnotation>>,
   commands: $ReadOnlyArray<NamedShape<CommandTypeAnnotation>>,
+  state?: $ReadOnlyArray<NamedShape<StateTypeAnnotation>>,
 }>;
 
 export type OptionsShape = $ReadOnly<{
@@ -185,6 +186,8 @@ export type ReservedPropTypeAnnotation = $ReadOnly<{
     | 'EdgeInsetsPrimitive',
 }>;
 
+export type StateTypeAnnotation = PropTypeAnnotation;
+
 export type CommandTypeAnnotation = FunctionTypeAnnotation<
   CommandParamTypeAnnotation,
   VoidTypeAnnotation,
@@ -282,6 +285,11 @@ export type NativeModuleBooleanTypeAnnotation = $ReadOnly<{
   type: 'BooleanTypeAnnotation',
 }>;
 
+export type NativeModuleEnumDeclaration = $ReadOnly<{
+  type: 'EnumDeclaration',
+  memberType: 'NumberTypeAnnotation' | 'StringTypeAnnotation',
+}>;
+
 export type NativeModuleGenericObjectTypeAnnotation = $ReadOnly<{
   type: 'GenericObjectTypeAnnotation',
 }>;
@@ -295,6 +303,16 @@ export type NativeModulePromiseTypeAnnotation = $ReadOnly<{
   type: 'PromiseTypeAnnotation',
 }>;
 
+export type UnionTypeAnnotationMemberType =
+  | 'NumberTypeAnnotation'
+  | 'ObjectTypeAnnotation'
+  | 'StringTypeAnnotation';
+
+export type NativeModuleUnionTypeAnnotation = $ReadOnly<{
+  type: 'UnionTypeAnnotation',
+  memberType: UnionTypeAnnotationMemberType,
+}>;
+
 export type NativeModuleMixedTypeAnnotation = $ReadOnly<{
   type: 'MixedTypeAnnotation',
 }>;
@@ -306,11 +324,13 @@ export type NativeModuleBaseTypeAnnotation =
   | NativeModuleDoubleTypeAnnotation
   | NativeModuleFloatTypeAnnotation
   | NativeModuleBooleanTypeAnnotation
+  | NativeModuleEnumDeclaration
   | NativeModuleGenericObjectTypeAnnotation
   | ReservedTypeAnnotation
   | NativeModuleTypeAliasTypeAnnotation
   | NativeModuleArrayTypeAnnotation<Nullable<NativeModuleBaseTypeAnnotation>>
   | NativeModuleObjectTypeAnnotation
+  | NativeModuleUnionTypeAnnotation
   | NativeModuleMixedTypeAnnotation;
 
 export type NativeModuleParamTypeAnnotation =

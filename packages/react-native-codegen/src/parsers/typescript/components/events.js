@@ -17,10 +17,17 @@ import type {
 } from '../../../CodegenSchema.js';
 
 function getPropertyType(
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   name,
-  optional,
+  optional: boolean,
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   typeAnnotation,
 ): NamedShape<EventTypeAnnotation> {
+  if (typeAnnotation.type === 'TSParenthesizedType') {
+    return getPropertyType(name, optional, typeAnnotation.typeAnnotation);
+  }
   const type =
     typeAnnotation.type === 'TSTypeReference'
       ? typeAnnotation.typeName.name
@@ -85,21 +92,17 @@ function getPropertyType(
       };
 
     case 'TSUnionType':
-      // Check for <T | null | void>
+      // Check for <T | null | undefined>
       if (
         typeAnnotation.types.some(
-          t => t.type === 'TSNullKeyword' || t.type === 'TSVoidKeyword',
+          t => t.type === 'TSNullKeyword' || t.type === 'TSUndefinedKeyword',
         )
       ) {
         const optionalType = typeAnnotation.types.filter(
-          t => t.type !== 'TSNullKeyword' && t.type !== 'TSVoidKeyword',
+          t => t.type !== 'TSNullKeyword' && t.type !== 'TSUndefinedKeyword',
         )[0];
 
-        // Check for <(T | T2) | null | void>
-        if (optionalType.type === 'TSParenthesizedType') {
-          return getPropertyType(name, true, optionalType.typeAnnotation);
-        }
-
+        // Check for <(T | T2) | null | undefined>
         return getPropertyType(name, true, optionalType);
       }
 
@@ -118,10 +121,10 @@ function getPropertyType(
 }
 
 function findEventArgumentsAndType(
-  typeAnnotation,
-  types,
-  bubblingType,
-  paperName,
+  typeAnnotation: $FlowFixMe,
+  types: TypeMap,
+  bubblingType: void | 'direct' | 'bubble',
+  paperName: ?$FlowFixMe,
 ) {
   if (!typeAnnotation.typeName) {
     throw new Error("typeAnnotation of event doesn't have a name");
@@ -140,19 +143,22 @@ function findEventArgumentsAndType(
         ? typeAnnotation.typeParameters.params[1].literal.value
         : null;
 
-    if (typeAnnotation.typeParameters.params[0].type === 'TSNullKeyword') {
-      return {
-        argumentProps: [],
-        bubblingType: eventType,
-        paperTopLevelNameDeprecated,
-      };
+    switch (typeAnnotation.typeParameters.params[0].type) {
+      case 'TSNullKeyword':
+      case 'TSUndefinedKeyword':
+        return {
+          argumentProps: [],
+          bubblingType: eventType,
+          paperTopLevelNameDeprecated,
+        };
+      default:
+        return findEventArgumentsAndType(
+          typeAnnotation.typeParameters.params[0],
+          types,
+          eventType,
+          paperTopLevelNameDeprecated,
+        );
     }
-    return findEventArgumentsAndType(
-      typeAnnotation.typeParameters.params[0],
-      types,
-      eventType,
-      paperTopLevelNameDeprecated,
-    );
   } else if (types[name]) {
     return findEventArgumentsAndType(
       types[name].typeAnnotation,
@@ -169,6 +175,8 @@ function findEventArgumentsAndType(
   }
 }
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function buildPropertiesForEvent(property): NamedShape<EventTypeAnnotation> {
   const name = property.key.name;
   const optional = property.optional || false;
@@ -177,11 +185,43 @@ function buildPropertiesForEvent(property): NamedShape<EventTypeAnnotation> {
   return getPropertyType(name, optional, typeAnnotation);
 }
 
-function getEventArgument(argumentProps, name) {
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
+function getEventArgument(argumentProps, name: $FlowFixMe) {
   return {
     type: 'ObjectTypeAnnotation',
     properties: argumentProps.map(buildPropertiesForEvent),
   };
+}
+
+function findEvent(typeAnnotation: $FlowFixMe, optional: boolean) {
+  switch (typeAnnotation.type) {
+    // Check for T | null | undefined
+    case 'TSUnionType':
+      return findEvent(
+        typeAnnotation.types.filter(
+          t => t.type !== 'TSNullKeyword' && t.type !== 'TSUndefinedKeyword',
+        )[0],
+        optional ||
+          typeAnnotation.types.some(
+            t => t.type === 'TSNullKeyword' || t.type === 'TSUndefinedKeyword',
+          ),
+      );
+    // Check for (T)
+    case 'TSParenthesizedType':
+      return findEvent(typeAnnotation.typeAnnotation, optional);
+    case 'TSTypeReference':
+      if (
+        typeAnnotation.typeName.name !== 'BubblingEventHandler' &&
+        typeAnnotation.typeName.name !== 'DirectEventHandler'
+      ) {
+        return null;
+      } else {
+        return {typeAnnotation, optional};
+      }
+    default:
+      return null;
+  }
 }
 
 function buildEventSchema(
@@ -189,31 +229,14 @@ function buildEventSchema(
   property: EventTypeAST,
 ): ?EventTypeShape {
   const name = property.key.name;
-
-  let optional = property.optional || false;
-  let typeAnnotation = property.typeAnnotation.typeAnnotation;
-
-  // Check for T | null | void
-  if (
-    typeAnnotation.type === 'TSUnionType' &&
-    typeAnnotation.types.some(
-      t => t.type === 'TSNullKeyword' || t.type === 'TSVoidKeyword',
-    )
-  ) {
-    typeAnnotation = typeAnnotation.types.filter(
-      t => t.type !== 'TSNullKeyword' && t.type !== 'TSVoidKeyword',
-    )[0];
-    optional = true;
-  }
-
-  if (
-    typeAnnotation.type !== 'TSTypeReference' ||
-    (typeAnnotation.typeName.name !== 'BubblingEventHandler' &&
-      typeAnnotation.typeName.name !== 'DirectEventHandler')
-  ) {
+  const foundEvent = findEvent(
+    property.typeAnnotation.typeAnnotation,
+    property.optional || false,
+  );
+  if (!foundEvent) {
     return null;
   }
-
+  const {typeAnnotation, optional} = foundEvent;
   const {argumentProps, bubblingType, paperTopLevelNameDeprecated} =
     findEventArgumentsAndType(typeAnnotation, types);
 

@@ -12,12 +12,13 @@
 
 'use strict';
 
-const AnimatedNode = require('./AnimatedNode');
-const AnimatedWithChildren = require('./AnimatedWithChildren');
-const NativeAnimatedHelper = require('../NativeAnimatedHelper');
+import type AnimatedNode from './AnimatedNode';
 
-const invariant = require('invariant');
-const normalizeColor = require('../../StyleSheet/normalizeColor');
+import AnimatedWithChildren from './AnimatedWithChildren';
+import NativeAnimatedHelper from '../NativeAnimatedHelper';
+
+import invariant from 'invariant';
+import normalizeColor from '../../StyleSheet/normalizeColor';
 
 import type {PlatformConfig} from '../AnimatedPlatformConfig';
 
@@ -299,7 +300,7 @@ function checkInfiniteRange(name: string, arr: $ReadOnlyArray<number>) {
   );
 }
 
-class AnimatedInterpolation<
+export default class AnimatedInterpolation<
   OutputT: number | string,
 > extends AnimatedWithChildren {
   // Export for testing.
@@ -368,5 +369,3 @@ class AnimatedInterpolation<
     };
   }
 }
-
-module.exports = AnimatedInterpolation;

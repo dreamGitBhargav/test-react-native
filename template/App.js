@@ -26,7 +26,31 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-const Section = ({children, title}): Node => {
+const styles = StyleSheet.create({
+  sectionContainer: {
+    marginTop: 32,
+    paddingHorizontal: 24,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  sectionDescription: {
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  highlight: {
+    fontWeight: '700',
+  },
+});
+
+type SectionProps = {
+  title: string,
+  children: Node,
+};
+
+function Section({children, title}: SectionProps): Node {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -50,9 +74,9 @@ const Section = ({children, title}): Node => {
       </Text>
     </View>
   );
-};
+}
 
-const App: () => Node = () => {
+export default function App(): Node {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -91,25 +115,4 @@ const App: () => Node = () => {
       </ScrollView>
     </SafeAreaView>
   );
-};
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
+}

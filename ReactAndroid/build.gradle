@@ -5,10 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+buildscript {
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${rootProject.hasProperty("kotlinVersion") ? rootProject.ext.kotlinVersion : KOTLIN_VERSION}"
+    }
+}
+
 plugins {
     id("com.android.library")
     id("com.facebook.react")
-    id("org.jetbrains.kotlin.android") version "1.6.10"
     id("maven-publish")
     id("de.undercouch.download")
 }
@@ -79,7 +84,7 @@ task downloadDoubleConversion(dependsOn: createNativeDepsDirectories, type: Down
 task prepareDoubleConversion(dependsOn: dependenciesPath ? [] : [downloadDoubleConversion], type: Copy) {
     from(dependenciesPath ?: tarTree(downloadDoubleConversion.dest))
     from("src/main/jni/third-party/double-conversion/")
-    include("double-conversion-${DOUBLE_CONVERSION_VERSION}/src/**/*", "Android.mk", "CMakeLists.txt")
+    include("double-conversion-${DOUBLE_CONVERSION_VERSION}/src/**/*", "CMakeLists.txt")
     filesMatching("*/src/**/*", { fname -> fname.path = "double-conversion/${fname.name}" })
     includeEmptyDirs = false
     into("$thirdPartyNdkDir/double-conversion")
@@ -95,7 +100,7 @@ task downloadFolly(dependsOn: createNativeDepsDirectories, type: Download) {
 task prepareFolly(dependsOn: dependenciesPath ? [] : [downloadFolly], type: Copy) {
     from(dependenciesPath ?: tarTree(downloadFolly.dest))
     from("src/main/jni/third-party/folly/")
-    include("folly-${FOLLY_VERSION}/folly/**/*", "Android.mk", "CMakeLists.txt")
+    include("folly-${FOLLY_VERSION}/folly/**/*", "CMakeLists.txt")
     eachFile { fname -> fname.path = (fname.path - "folly-${FOLLY_VERSION}/") }
     includeEmptyDirs = false
     into("$thirdPartyNdkDir/folly")
@@ -111,7 +116,7 @@ task downloadFmt(dependsOn: createNativeDepsDirectories, type: Download) {
 task prepareFmt(dependsOn: dependenciesPath ? [] : [downloadFmt], type: Copy) {
     from(dependenciesPath ?: tarTree(downloadFmt.dest))
     from("src/main/jni/third-party/fmt/")
-    include("fmt-${FMT_VERSION}/src/**/*", "fmt-${FMT_VERSION}/include/**/*", "Android.mk", "CMakeLists.txt")
+    include("fmt-${FMT_VERSION}/src/**/*", "fmt-${FMT_VERSION}/include/**/*", "CMakeLists.txt")
     eachFile { fname -> fname.path = (fname.path - "fmt-${FMT_VERSION}/") }
     includeEmptyDirs = false
     into("$thirdPartyNdkDir/fmt")
@@ -148,7 +153,7 @@ final def prepareGlog = tasks.register("prepareGlog", PrepareGlogTask) {
     it.outputDir.set(new File(thirdPartyNdkDir, "glog"))
 }
 
-// Create Android.mk library module based on jsc from npm
+// Create Android native library module based on jsc from npm
 tasks.register('prepareJSC', PrepareJSCTask) {
     it.jscPackagePath.set(findNodeModulePath(projectDir, "jsc-android"))
     it.outputDir = project.layout.buildDirectory.dir("third-party-ndk/jsc")
@@ -293,6 +298,7 @@ android {
                     "jsijniprofiler",
                     "reactnativeblob",
                     "reactperfloggerjni",
+                    "react_newarchdefaults",
                     "turbomodulejsijni",
                     "fabricjni"
             }
@@ -330,7 +336,6 @@ android {
     preBuild.dependsOn("generateCodegenArtifactsFromSchema")
 
     sourceSets.main {
-        jni.srcDirs = []
         res.srcDirs = ["src/main/res/devsupport", "src/main/res/shell", "src/main/res/views/modal", "src/main/res/views/uimanager"]
         java {
             srcDirs = ["src/main/java", "src/main/libraries/soloader/java", "src/main/jni/first-party/fb/jni/java"]
@@ -372,35 +377,39 @@ android {
 }
 
 dependencies {
-    api("com.facebook.infer.annotation:infer-annotation:0.18.0")
-    api("com.facebook.yoga:proguard-annotations:1.19.0")
-    api("javax.inject:javax.inject:1")
-    api("androidx.appcompat:appcompat:${APPCOMPAT_VERSION}")
-    api("androidx.appcompat:appcompat-resources:${APPCOMPAT_VERSION}")
-    api("androidx.autofill:autofill:1.1.0")
-    api("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
+    api("androidx.appcompat:appcompat-resources:${ANDROIDX_APPCOMPAT_VERSION}")
+    api("androidx.appcompat:appcompat:${ANDROIDX_APPCOMPAT_VERSION}")
+    api("androidx.autofill:autofill:${ANDROIDX_AUTOFILL_VERSION}")
+    api("androidx.swiperefreshlayout:swiperefreshlayout:${SWIPEREFRESH_LAYOUT_VERSION}")
+    api("androidx.tracing:tracing:${ANDROIDX_TRACING_VERSION}")
+
+    api("com.facebook.fbjni:fbjni-java-only:${FBJNI_VERSION}")
     api("com.facebook.fresco:fresco:${FRESCO_VERSION}")
     api("com.facebook.fresco:imagepipeline-okhttp3:${FRESCO_VERSION}")
     api("com.facebook.fresco:ui-common:${FRESCO_VERSION}")
+    api("com.facebook.infer.annotation:infer-annotation:${INFER_ANNOTATIONS_VERSION}")
     api("com.facebook.soloader:soloader:${SO_LOADER_VERSION}")
-    api("com.google.code.findbugs:jsr305:3.0.2")
-    api("com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}")
+    api("com.facebook.yoga:proguard-annotations:${PROGUARD_ANNOTATIONS_VERSION}")
+
+    api("com.google.code.findbugs:jsr305:${JSR305_VERSION}")
     api("com.squareup.okhttp3:okhttp-urlconnection:${OKHTTP_VERSION}")
-    api("com.squareup.okio:okio:2.9.0")
-    api("com.facebook.fbjni:fbjni-java-only:0.2.2")
-    extractHeaders("com.facebook.fbjni:fbjni:0.2.2:headers")
-    extractJNI("com.facebook.fbjni:fbjni:0.2.2")
+    api("com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}")
+    api("com.squareup.okio:okio:${OKIO_VERSION}")
+    api("javax.inject:javax.inject:${JAVAX_INJECT_VERSION}")
+
+    extractHeaders("com.facebook.fbjni:fbjni:${FBJNI_VERSION}:headers")
+    extractJNI("com.facebook.fbjni:fbjni:${FBJNI_VERSION}")
 
     // It's up to the consumer to decide if hermes should be included or not.
     // Therefore hermes-engine is a compileOnly dependency.
     compileOnly(project(":ReactAndroid:hermes-engine"))
 
     testImplementation("junit:junit:${JUNIT_VERSION}")
-    testImplementation("org.powermock:powermock-api-mockito2:${POWERMOCK_VERSION}")
-    testImplementation("org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}")
-    testImplementation("org.powermock:powermock-classloading-xstream:${POWERMOCK_VERSION}")
+    testImplementation("org.assertj:assertj-core:${ASSERTJ_VERSION}")
     testImplementation("org.mockito:mockito-core:${MOCKITO_CORE_VERSION}")
-    testImplementation("org.assertj:assertj-core:3.21.0")
+    testImplementation("org.powermock:powermock-api-mockito2:${POWERMOCK_VERSION}")
+    testImplementation("org.powermock:powermock-classloading-xstream:${POWERMOCK_VERSION}")
+    testImplementation("org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}")
     testImplementation("org.robolectric:robolectric:${ROBOLECTRIC_VERSION}")
 
     androidTestImplementation(fileTree(dir: "src/main/third-party/java/buck-android-support/", include: ["*.jar"]))
@@ -423,15 +432,6 @@ react {
 }
 
 afterEvaluate {
-    // Needed as some of the native sources needs to be downloaded
-    // before configureNdkBuildDebug could be executed.
-    reactNativeArchitectures().each { architecture ->
-        tasks.findByName("configureCMakeDebug[${architecture}]")?.configure { dependsOn(preBuild) }
-        tasks.findByName("configureCMakeRelWithDebInfo[${architecture}]")?.configure { dependsOn(preBuild) }
-    }
-    configureCMakeDebug.dependsOn(preBuild)
-    configureCMakeRelWithDebInfo.dependsOn(preBuild)
-
     publishing {
         publications {
             release(MavenPublication) {
@@ -480,3 +480,5 @@ afterEvaluate {
         }
     }
 }
+
+apply plugin: "org.jetbrains.kotlin.android"

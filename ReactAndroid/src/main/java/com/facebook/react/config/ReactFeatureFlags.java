@@ -32,6 +32,12 @@ public class ReactFeatureFlags {
   public static volatile boolean enableFabricRenderer = false;
 
   /**
+   * Feature flag to enable the new bridgeless architecture. Note: Enabling this will force enable
+   * the following flags: `useTurboModules` & `enableFabricRenderer`.
+   */
+  public static boolean enableBridgelessArchitecture = false;
+
+  /**
    * After TurboModules and Fabric are enabled, we need to ensure that the legacy NativeModule isn't
    * isn't used. So, turn this flag on to trigger warnings whenever the legacy NativeModule system
    * is used.
@@ -64,10 +70,6 @@ public class ReactFeatureFlags {
   /** This feature flag enables logs for Fabric */
   public static boolean enableFabricLogs = false;
 
-  public static boolean enableRuntimeScheduler = false;
-
-  public static boolean enableRuntimeSchedulerInTurboModule = false;
-
   /** Feature flag to configure eager attachment of the root view/initialisation of the JS code */
   public static boolean enableEagerRootViewAttachment = false;
 
@@ -76,6 +78,9 @@ public class ReactFeatureFlags {
 
   /** Enables or disables MapBuffer Serialization */
   public static boolean mapBufferSerializationEnabled = false;
+
+  /** Enables or disables calculation of Transformed Frames */
+  public static boolean calculateTransformedFramesEnabled = false;
 
   /** Feature Flag to use overflowInset values provided by Yoga */
   public static boolean useOverflowInset = false;
@@ -98,16 +103,10 @@ public class ReactFeatureFlags {
    */
   public static boolean enableLargeTextMeasureCache = true;
 
-  /** TODO: T113245006 Delete this flag. Enables caching of spannables for text */
-  public static boolean enableSpannableCache = false;
-
   public static boolean dispatchPointerEvents = false;
 
   /** Feature Flag to enable the pending event queue in fabric before mounting views */
   public static boolean enableFabricPendingEventQueue = false;
-
-  /** Feature Flag to control RN Android scrollEventThrottle prop. */
-  public static boolean enableScrollEventThrottle = false;
 
   /**
    * Feature flag that controls how turbo modules are exposed to JS
@@ -124,4 +123,17 @@ public class ReactFeatureFlags {
    * Feature Flag to enable View Recycling. When enabled, individual ViewManagers must still opt-in.
    */
   public static boolean enableViewRecycling = false;
+
+  /**
+   * Enable prop iterator setter-style construction of Props in C++ (this flag is not used in Java).
+   */
+  public static boolean enableCppPropsIteratorSetter = false;
+
+  /**
+   * Allow Differentiator.cpp and FabricMountingManager.cpp to generate a RemoveDeleteTree mega-op.
+   */
+  public static boolean enableRemoveDeleteTreeInstruction = false;
+
+  /** Temporary flag to allow execution of mount items up to 15ms earlier than normal. */
+  public static boolean enableEarlyScheduledMountItemExecution = false;
 }

@@ -119,7 +119,7 @@ function translatePrimitiveJSTypeToCpp(
     realTypeAnnotation = resolveAlias(realTypeAnnotation.name);
   }
 
-  function wrap(type) {
+  function wrap(type: string) {
     return nullable ? `std::optional<${type}>` : type;
   }
 
@@ -146,8 +146,28 @@ function translatePrimitiveJSTypeToCpp(
       return wrap('int');
     case 'BooleanTypeAnnotation':
       return wrap('bool');
+    case 'EnumDeclaration':
+      switch (realTypeAnnotation.memberType) {
+        case 'NumberTypeAnnotation':
+          return wrap('double');
+        case 'StringTypeAnnotation':
+          return wrap('jsi::String');
+        default:
+          throw new Error(createErrorMessage(realTypeAnnotation.type));
+      }
     case 'GenericObjectTypeAnnotation':
       return wrap('jsi::Object');
+    case 'UnionTypeAnnotation':
+      switch (typeAnnotation.memberType) {
+        case 'NumberTypeAnnotation':
+          return wrap('double');
+        case 'ObjectTypeAnnotation':
+          return wrap('jsi::Object');
+        case 'StringTypeAnnotation':
+          return wrap('jsi::String');
+        default:
+          throw new Error(createErrorMessage(realTypeAnnotation.type));
+      }
     case 'ObjectTypeAnnotation':
       return wrap('jsi::Object');
     case 'ArrayTypeAnnotation':

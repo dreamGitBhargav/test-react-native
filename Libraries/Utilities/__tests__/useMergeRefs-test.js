@@ -4,9 +4,9 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+react_native
  * @flow strict-local
  * @format
+ * @oncall react_native
  */
 
 import useMergeRefs from '../useMergeRefs';
@@ -17,6 +17,8 @@ import {act, create} from 'react-test-renderer';
 /**
  * TestView provide a component execution environment to test hooks.
  */
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function TestView({name, refs}) {
   const mergeRef = useMergeRefs(...refs);
   return <View ref={mergeRef} testID={name} />;
@@ -38,7 +40,7 @@ class TestViewInstance {
     return testID == null ? null : new TestViewInstance(testID);
   }
 
-  static named(name: string) {
+  static named(name: string): $FlowFixMe {
     // $FlowIssue[prop-missing] - Flow does not support type augmentation.
     return expect.testViewInstance(name);
   }

@@ -10,14 +10,16 @@
 
 'use strict';
 
-const {AnimatedEvent, attachNativeEvent} = require('./AnimatedEvent');
-const AnimatedImplementation = require('./AnimatedImplementation');
-const AnimatedInterpolation = require('./nodes/AnimatedInterpolation');
-const AnimatedNode = require('./nodes/AnimatedNode');
-const AnimatedValue = require('./nodes/AnimatedValue');
-const AnimatedValueXY = require('./nodes/AnimatedValueXY');
+import type {EndResult} from './animations/Animation';
 
-const createAnimatedComponent = require('./createAnimatedComponent');
+import {AnimatedEvent, attachNativeEvent} from './AnimatedEvent';
+import AnimatedImplementation from './AnimatedImplementation';
+import AnimatedInterpolation from './nodes/AnimatedInterpolation';
+import AnimatedNode from './nodes/AnimatedNode';
+import AnimatedValue from './nodes/AnimatedValue';
+import AnimatedValueXY from './nodes/AnimatedValueXY';
+
+import createAnimatedComponent from './createAnimatedComponent';
 
 import type {EndCallback} from './animations/Animation';
 import type {TimingAnimationConfig} from './animations/TimingAnimation';
@@ -43,7 +45,7 @@ function mockAnimationStart(
     const guardedCallback =
       callback == null
         ? callback
-        : (...args) => {
+        : (...args: Array<EndResult>) => {
             if (inAnimationCallback) {
               console.warn(
                 'Ignoring recursive animation callback when running mock animations',
@@ -158,6 +160,7 @@ type LoopAnimationConfig = {
 
 const loop = function (
   animation: CompositeAnimation,
+  // $FlowFixMe[prop-missing]
   {iterations = -1}: LoopAnimationConfig = {},
 ): CompositeAnimation {
   return emptyAnimation;
@@ -165,7 +168,7 @@ const loop = function (
 
 export type {AnimatedNumeric as Numeric};
 
-module.exports = {
+export default {
   Value: AnimatedValue,
   ValueXY: AnimatedValueXY,
   Color: AnimatedColor,

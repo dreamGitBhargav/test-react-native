@@ -10,14 +10,12 @@
 
 'use strict';
 
-const AnimatedValue = require('./nodes/AnimatedValue');
-const AnimatedValueXY = require('./nodes/AnimatedValueXY');
-const NativeAnimatedHelper = require('./NativeAnimatedHelper');
-const ReactNative = require('../Renderer/shims/ReactNative');
+import AnimatedValue from './nodes/AnimatedValue';
+import AnimatedValueXY from './nodes/AnimatedValueXY';
+import NativeAnimatedHelper from './NativeAnimatedHelper';
+import {findNodeHandle} from '../ReactNative/RendererProxy';
 
-const invariant = require('invariant');
-
-const {shouldUseNativeDriver} = require('./NativeAnimatedHelper');
+import invariant from 'invariant';
 
 import type {PlatformConfig} from './AnimatedPlatformConfig';
 
@@ -31,7 +29,7 @@ export type EventConfig = {
   platformConfig?: PlatformConfig,
 };
 
-function attachNativeEvent(
+export function attachNativeEvent(
   viewRef: any,
   eventName: string,
   argMapping: $ReadOnlyArray<?Mapping>,
@@ -41,7 +39,7 @@ function attachNativeEvent(
   // key path inside the `nativeEvent` object. Ex.: ['contentOffset', 'x'].
   const eventMappings = [];
 
-  const traverse = (value, path) => {
+  const traverse = (value: mixed, path: Array<string>) => {
     if (value instanceof AnimatedValue) {
       value.__makeNative(platformConfig);
 
@@ -67,7 +65,7 @@ function attachNativeEvent(
   // Assume that the event containing `nativeEvent` is always the first argument.
   traverse(argMapping[0].nativeEvent, []);
 
-  const viewTag = ReactNative.findNodeHandle(viewRef);
+  const viewTag = findNodeHandle(viewRef);
   if (viewTag != null) {
     eventMappings.forEach(mapping => {
       NativeAnimatedHelper.API.addAnimatedEventToView(
@@ -94,8 +92,8 @@ function attachNativeEvent(
   };
 }
 
-function validateMapping(argMapping, args) {
-  const validate = (recMapping, recEvt, key) => {
+function validateMapping(argMapping: $ReadOnlyArray<?Mapping>, args: any) {
+  const validate = (recMapping: ?Mapping, recEvt: any, key: string) => {
     if (recMapping instanceof AnimatedValue) {
       invariant(
         typeof recEvt === 'number',
@@ -146,7 +144,7 @@ function validateMapping(argMapping, args) {
   });
 }
 
-class AnimatedEvent {
+export class AnimatedEvent {
   _argMapping: $ReadOnlyArray<?Mapping>;
   _listeners: Array<Function> = [];
   _attachedEvent: ?{detach: () => void, ...};
@@ -165,7 +163,7 @@ class AnimatedEvent {
       this.__addListener(config.listener);
     }
     this._attachedEvent = null;
-    this.__isNative = shouldUseNativeDriver(config);
+    this.__isNative = NativeAnimatedHelper.shouldUseNativeDriver(config);
     this.__platformConfig = config.platformConfig;
   }
 
@@ -177,7 +175,7 @@ class AnimatedEvent {
     this._listeners = this._listeners.filter(listener => listener !== callback);
   }
 
-  __attach(viewRef: any, eventName: string) {
+  __attach(viewRef: any, eventName: string): void {
     invariant(
       this.__isNative,
       'Only native driven events need to be attached.',
@@ -191,7 +189,7 @@ class AnimatedEvent {
     );
   }
 
-  __detach(viewTag: any, eventName: string) {
+  __detach(viewTag: any, eventName: string): void {
     invariant(
       this.__isNative,
       'Only native driven events need to be detached.',
@@ -223,7 +221,10 @@ class AnimatedEvent {
         validatedMapping = true;
       }
 
-      const traverse = (recMapping, recEvt) => {
+      const traverse = (
+        recMapping: ?(Mapping | AnimatedValue),
+        recEvt: any,
+      ) => {
         if (recMapping instanceof AnimatedValue) {
           if (typeof recEvt === 'number') {
             recMapping.setValue(recEvt);
@@ -254,5 +255,3 @@ class AnimatedEvent {
     this._listeners.forEach(listener => listener(...args));
   };
 }
-
-module.exports = {AnimatedEvent, attachNativeEvent};

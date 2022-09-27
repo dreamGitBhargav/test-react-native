@@ -56,6 +56,15 @@ static uint64_t monotonicTimeGetCurrentNanoseconds(void)
   return (mach_absolute_time() * tb_info.numer) / tb_info.denom;
 }
 
+static NSError* addResponseHeadersToError(NSError* originalError, NSHTTPURLResponse* response) {
+    NSMutableDictionary<NSString*, id>* _userInfo =  (NSMutableDictionary<NSString*, id>*)originalError.userInfo.mutableCopy;
+    _userInfo[@"httpStatusCode"] = [NSNumber numberWithInt:response.statusCode];
+    _userInfo[@"httpResponseHeaders"] = response.allHeaderFields;
+    NSError *error = [NSError errorWithDomain:originalError.domain code:originalError.code userInfo:_userInfo];
+    
+    return error;
+}
+
 @interface RCTImageLoader() <NativeImageLoaderIOSSpec, RCTImageLoaderWithAttributionProtocol>
 
 @end
@@ -492,6 +501,10 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
   BOOL cacheResult = [loadHandler respondsToSelector:@selector(shouldCacheLoadedImages)] ?
   [loadHandler shouldCacheLoadedImages] : YES;
 
+  if (request.cachePolicy == NSURLRequestReloadIgnoringLocalCacheData) {
+    cacheResult = NO;
+  }
+
   if (cacheResult && partialLoadHandler) {
     UIImage *image = [[self imageCache] imageForUrl:request.URL.absoluteString
                                                size:size
@@ -523,6 +536,10 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
         }
       });
     } else if (!std::atomic_load(cancelled.get())) {
+        if (response && error && [response isKindOfClass: [NSHTTPURLResponse class]]) {
+            NSHTTPURLResponse* _httpResp = (NSHTTPURLResponse*)response;
+            error = addResponseHeadersToError(error, _httpResp);
+        }
       completionBlock(error, imageOrData, imageMetadata, cacheResult, response);
     }
   };

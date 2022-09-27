@@ -10,84 +10,16 @@
 
 import {Button, StyleSheet, ScrollView, View, Text} from 'react-native';
 import * as React from 'react';
-import type {ViewProps} from 'react-native/Libraries/Components/View/ViewPropTypes';
 
 import PointerEventAttributesHoverablePointers from './W3CPointerEventPlatformTests/PointerEventAttributesHoverablePointers';
-
-function EventfulView(props: {|
-  name: string,
-  emitByDefault?: boolean,
-  onLeave?: boolean,
-  onLeaveCapture?: boolean,
-  onEnter?: boolean,
-  onEnterCapture?: boolean,
-  onDown?: boolean,
-  onDownCapture?: boolean,
-  onUp?: boolean,
-  onUpCapture?: boolean,
-  onMove?: boolean,
-  onMoveCapture?: boolean,
-  log: string => void,
-  ...ViewProps,
-|}) {
-  const ref = React.useRef<?React.ElementRef<typeof View>>();
-  React.useEffect(() => {
-    // $FlowFixMe[prop-missing] Using private property
-    setTag(ref.current?._nativeTag);
-  }, [ref]);
-
-  const {
-    log,
-    name,
-    children,
-    emitByDefault,
-    onLeave,
-    onLeaveCapture,
-    onEnter,
-    onEnterCapture,
-    onDown,
-    onDownCapture,
-    onUp,
-    onUpCapture,
-    onMove,
-    onMoveCapture,
-    ...restProps
-  } = props;
-  const [tag, setTag] = React.useState('');
-
-  const eventLog = eventName => event => {
-    // $FlowFixMe Using private property
-    log(`${name} - ${eventName} - target: ${event.target._nativeTag}`);
-  };
-
-  const listeners = {
-    onPointerUp: onUp ? eventLog('up') : null,
-    onPointerUpCapture: onUpCapture ? eventLog('up capture') : null,
-    onPointerDown: onDown ? eventLog('down') : null,
-    onPointerDownCapture: onDownCapture ? eventLog('down capture') : null,
-    onPointerLeave2: onLeave ? eventLog('leave') : null,
-    onPointerLeave2Capture: onLeaveCapture ? eventLog('leave capture') : null,
-    onPointerEnter2: onEnter ? eventLog('enter') : null,
-    onPointerEnter2Capture: onEnterCapture ? eventLog('enter capture') : null,
-    onPointerMove2: onMove ? eventLog('move') : null,
-    onPointerMove2Capture: onMoveCapture ? eventLog('move capture') : null,
-  };
-
-  let listeningTo = Object.keys(listeners)
-    .filter(listenerName => listeners[listenerName] != null)
-    .join(', ');
-
-  return (
-    <View ref={ref} {...listeners} {...restProps} collapsable={false}>
-      <View style={styles.row}>
-        <Text>
-          {props.name}, {tag}, {listeningTo}
-        </Text>
-      </View>
-      {props.children}
-    </View>
-  );
-}
+import PointerEventPointerMove from './W3CPointerEventPlatformTests/PointerEventPointerMove';
+import CompatibilityAnimatedPointerMove from './Compatibility/CompatibilityAnimatedPointerMove';
+import CompatibilityNativeGestureHandling from './Compatibility/CompatibilityNativeGestureHandling';
+import PointerEventPrimaryTouchPointer from './W3CPointerEventPlatformTests/PointerEventPrimaryTouchPointer';
+import PointerEventAttributesNoHoverPointers from './W3CPointerEventPlatformTests/PointerEventAttributesNoHoverPointers';
+import PointerEventPointerMoveOnChordedMouseButton from './W3CPointerEventPlatformTests/PointerEventPointerMoveOnChordedMouseButton';
+import PointerEventPointerMoveAcross from './W3CPointerEventPlatformTests/PointerEventPointerMoveAcross';
+import EventfulView from './W3CPointerEventsEventfulView';
 
 function AbsoluteChildExample({log}: {log: string => void}) {
   return (
@@ -122,6 +54,8 @@ function RelativeChildExample({log}: {log: string => void}) {
         log={log}
         style={StyleSheet.compose(styles.eventfulView, styles.parent)}
         onUp
+        onOver
+        onOut
         onDown
         onEnter
         onLeave
@@ -129,6 +63,8 @@ function RelativeChildExample({log}: {log: string => void}) {
         <EventfulView
           log={log}
           onUp
+          onOver
+          onOut
           onDown
           onEnter
           onLeave
@@ -137,6 +73,8 @@ function RelativeChildExample({log}: {log: string => void}) {
           <EventfulView
             log={log}
             onUp
+            onOver
+            onOut
             onDown
             onEnter
             onLeave
@@ -159,7 +97,7 @@ function PointerEventScaffolding({
 }) {
   const [eventsLog, setEventsLog] = React.useState('');
   const clear = () => setEventsLog('');
-  const log = eventStr => {
+  const log = (eventStr: string) => {
     setEventsLog(currentEventsLog => `${eventStr}\n${currentEventsLog}`);
   };
   return (
@@ -233,5 +171,47 @@ export default {
         return <PointerEventAttributesHoverablePointers />;
       },
     },
+    {
+      name: 'pointerevent_attributes_nohover_pointers',
+      description: '',
+      title: 'Pointer Events no-hover pointer attributes test',
+      render(): React.Node {
+        return <PointerEventAttributesNoHoverPointers />;
+      },
+    },
+    {
+      name: 'pointerevent_pointermove',
+      description: '',
+      title: 'PointerMove test',
+      render(): React.Node {
+        return <PointerEventPointerMove />;
+      },
+    },
+    {
+      name: 'pointerevent_primary_touch_pointer',
+      description: '',
+      title: 'Pointer Event primary touch pointer test',
+      render(): React.Node {
+        return <PointerEventPrimaryTouchPointer />;
+      },
+    },
+    {
+      name: 'pointerevent_pointermove_on_chorded_mouse_button',
+      description: '',
+      title: 'PointerEvents pointermove on button state changes',
+      render(): React.Node {
+        return <PointerEventPointerMoveOnChordedMouseButton />;
+      },
+    },
+    {
+      name: 'pointerevent_pointermove_across',
+      description: '',
+      title: 'Pointermove handling across elements',
+      render(): React.Node {
+        return <PointerEventPointerMoveAcross />;
+      },
+    },
+    CompatibilityAnimatedPointerMove,
+    CompatibilityNativeGestureHandling,
   ],
 };

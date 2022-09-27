@@ -48,8 +48,9 @@ RawProps::RawProps(folly::dynamic const &dynamic) noexcept {
   dynamic_ = dynamic;
 }
 
-void RawProps::parse(RawPropsParser const &parser, const PropsParserContext &)
-    const noexcept {
+void RawProps::parse(
+    RawPropsParser const &parser,
+    const PropsParserContext & /*unused*/) const noexcept {
   react_native_assert(parser_ == nullptr && "A parser was already assigned.");
   parser_ = &parser;
   parser.preparse(*this);
@@ -91,6 +92,13 @@ const RawValue *RawProps::at(
       parser_ &&
       "The object is not parsed. `parse` must be called before `at`.");
   return parser_->at(*this, RawPropsKey{prefix, name, suffix});
+}
+
+void RawProps::iterateOverValues(
+    std::function<
+        void(RawPropsPropNameHash, const char *, RawValue const &)> const &fn)
+    const {
+  return parser_->iterateOverValues(*this, fn);
 }
 
 } // namespace react

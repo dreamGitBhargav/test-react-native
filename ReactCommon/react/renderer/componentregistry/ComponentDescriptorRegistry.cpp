@@ -50,7 +50,7 @@ void ComponentDescriptorRegistry::add(
 }
 
 void ComponentDescriptorRegistry::registerComponentDescriptor(
-    SharedComponentDescriptor componentDescriptor) const {
+    const SharedComponentDescriptor &componentDescriptor) const {
   ComponentHandle componentHandle = componentDescriptor->getComponentHandle();
   _registryByHandle[componentHandle] = componentDescriptor;
 
@@ -119,14 +119,10 @@ bool ComponentDescriptorRegistry::hasComponentDescriptorAt(
   std::shared_lock<butter::shared_mutex> lock(mutex_);
 
   auto iterator = _registryByHandle.find(componentHandle);
-  if (iterator == _registryByHandle.end()) {
-    return false;
-  }
-
-  return true;
+  return iterator != _registryByHandle.end();
 }
 
-SharedShadowNode ComponentDescriptorRegistry::createNode(
+ShadowNode::Shared ComponentDescriptorRegistry::createNode(
     Tag tag,
     std::string const &viewName,
     SurfaceId surfaceId,
@@ -136,8 +132,7 @@ SharedShadowNode ComponentDescriptorRegistry::createNode(
   auto const &componentDescriptor = this->at(unifiedComponentName);
 
   auto const fragment = ShadowNodeFamilyFragment{tag, surfaceId, nullptr};
-  auto family =
-      componentDescriptor.createFamily(fragment, std::move(eventTarget));
+  auto family = componentDescriptor.createFamily(fragment, eventTarget);
   auto const props = componentDescriptor.cloneProps(
       PropsParserContext{surfaceId, *contextContainer_.get()},
       nullptr,
@@ -155,7 +150,7 @@ SharedShadowNode ComponentDescriptorRegistry::createNode(
 }
 
 void ComponentDescriptorRegistry::setFallbackComponentDescriptor(
-    SharedComponentDescriptor descriptor) {
+    const SharedComponentDescriptor &descriptor) {
   _fallbackComponentDescriptor = descriptor;
   registerComponentDescriptor(descriptor);
 }

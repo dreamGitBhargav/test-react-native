@@ -21,7 +21,6 @@ import typeof Image from './Libraries/Image/Image';
 import typeof ImageBackground from './Libraries/Image/ImageBackground';
 import typeof InputAccessoryView from './Libraries/Components/TextInput/InputAccessoryView';
 import typeof KeyboardAvoidingView from './Libraries/Components/Keyboard/KeyboardAvoidingView';
-import typeof MaskedViewIOS from './Libraries/Components/MaskedView/MaskedViewIOS';
 import typeof Modal from './Libraries/Modal/Modal';
 import typeof Pressable from './Libraries/Components/Pressable/Pressable';
 import typeof ProgressBarAndroid from './Libraries/Components/ProgressBarAndroid/ProgressBarAndroid';
@@ -48,6 +47,7 @@ import typeof VirtualizedSectionList from './Libraries/Lists/VirtualizedSectionL
 import typeof ActionSheetIOS from './Libraries/ActionSheetIOS/ActionSheetIOS';
 import typeof Alert from './Libraries/Alert/Alert';
 import typeof Animated from './Libraries/Animated/Animated';
+import typeof * as AnimatedModule from './Libraries/Animated/Animated';
 import typeof Appearance from './Libraries/Utilities/Appearance';
 import typeof AppRegistry from './Libraries/ReactNative/AppRegistry';
 import typeof AppState from './Libraries/AppState/AppState';
@@ -145,15 +145,6 @@ module.exports = {
     return require('./Libraries/Components/Keyboard/KeyboardAvoidingView')
       .default;
   },
-  get MaskedViewIOS(): MaskedViewIOS {
-    warnOnce(
-      'maskedviewios-moved',
-      'MaskedViewIOS has been extracted from react-native core and will be removed in a future release. ' +
-        "It can now be installed and imported from '@react-native-masked-view/masked-view' instead of 'react-native'. " +
-        'See https://github.com/react-native-masked-view/masked-view',
-    );
-    return require('./Libraries/Components/MaskedView/MaskedViewIOS');
-  },
   get Modal(): Modal {
     return require('./Libraries/Modal/Modal');
   },
@@ -245,8 +236,11 @@ module.exports = {
   get Alert(): Alert {
     return require('./Libraries/Alert/Alert');
   },
-  get Animated(): Animated {
-    return require('./Libraries/Animated/Animated');
+  // Include any types exported in the Animated module together with its default export, so
+  // you can references types such as Animated.Numeric
+  get Animated(): {...$Diff<AnimatedModule, {default: any}>, ...Animated} {
+    // $FlowExpectedError[prop-missing]: we only return the default export, all other exports are types
+    return require('./Libraries/Animated/Animated').default;
   },
   get Appearance(): Appearance {
     return require('./Libraries/Utilities/Appearance');
@@ -289,10 +283,10 @@ module.exports = {
     return require('./Libraries/Utilities/Dimensions');
   },
   get Easing(): Easing {
-    return require('./Libraries/Animated/Easing');
+    return require('./Libraries/Animated/Easing').default;
   },
   get findNodeHandle(): $PropertyType<ReactNative, 'findNodeHandle'> {
-    return require('./Libraries/Renderer/shims/ReactNative').findNodeHandle;
+    return require('./Libraries/ReactNative/RendererProxy').findNodeHandle;
   },
   get I18nManager(): I18nManager {
     return require('./Libraries/ReactNative/I18nManager');
@@ -376,7 +370,7 @@ module.exports = {
     ReactNative,
     'unstable_batchedUpdates',
   > {
-    return require('./Libraries/Renderer/shims/ReactNative')
+    return require('./Libraries/ReactNative/RendererProxy')
       .unstable_batchedUpdates;
   },
   get useColorScheme(): useColorScheme {
@@ -437,29 +431,41 @@ module.exports = {
   get ColorPropType(): $FlowFixMe {
     invariant(
       false,
-      'ColorPropType has been removed from React Native. Migrate to ' +
-        "ColorPropType exported from 'deprecated-react-native-prop-types'.",
+      'ColorPropType has been removed from React Native, along with all ' +
+        'other PropTypes. We recommend that you migrate away from PropTypes ' +
+        'and switch to a type system like TypeScript. If you need to ' +
+        'continue using ColorPropType, migrate to the ' +
+        "'deprecated-react-native-prop-types' package.",
     );
   },
   get EdgeInsetsPropType(): $FlowFixMe {
     invariant(
       false,
-      'EdgeInsetsPropType has been removed from React Native. Migrate to ' +
-        "EdgeInsetsPropType exported from 'deprecated-react-native-prop-types'.",
+      'EdgeInsetsPropType has been removed from React Native, along with all ' +
+        'other PropTypes. We recommend that you migrate away from PropTypes ' +
+        'and switch to a type system like TypeScript. If you need to ' +
+        'continue using EdgeInsetsPropType, migrate to the ' +
+        "'deprecated-react-native-prop-types' package.",
     );
   },
   get PointPropType(): $FlowFixMe {
     invariant(
       false,
-      'PointPropType has been removed from React Native. Migrate to ' +
-        "PointPropType exported from 'deprecated-react-native-prop-types'.",
+      'PointPropType has been removed from React Native, along with all ' +
+        'other PropTypes. We recommend that you migrate away from PropTypes ' +
+        'and switch to a type system like TypeScript. If you need to ' +
+        'continue using PointPropType, migrate to the ' +
+        "'deprecated-react-native-prop-types' package.",
     );
   },
   get ViewPropTypes(): $FlowFixMe {
     invariant(
       false,
-      'ViewPropTypes has been removed from React Native. Migrate to ' +
-        "ViewPropTypes exported from 'deprecated-react-native-prop-types'.",
+      'ViewPropTypes has been removed from React Native, along with all ' +
+        'other PropTypes. We recommend that you migrate away from PropTypes ' +
+        'and switch to a type system like TypeScript. If you need to ' +
+        'continue using ViewPropTypes, migrate to the ' +
+        "'deprecated-react-native-prop-types' package.",
     );
   },
 };
@@ -733,6 +739,21 @@ if (__DEV__) {
         'DatePickerAndroid has been removed from React Native. ' +
           "It can now be installed and imported from '@react-native-community/datetimepicker' instead of 'react-native'. " +
           'See https://github.com/react-native-datetimepicker/datetimepicker',
+      );
+    },
+  });
+  /* $FlowFixMe[prop-missing] This is intentional: Flow will error when
+   * attempting to access MaskedViewIOS. */
+  /* $FlowFixMe[invalid-export] This is intentional: Flow will error when
+   * attempting to access MaskedViewIOS. */
+  Object.defineProperty(module.exports, 'MaskedViewIOS', {
+    configurable: true,
+    get() {
+      invariant(
+        false,
+        'MaskedViewIOS has been removed from React Native. ' +
+          "It can now be installed and imported from '@react-native-community/react-native-masked-view' instead of 'react-native'. " +
+          'See https://github.com/react-native-masked-view/masked-view',
       );
     },
   });

@@ -7,6 +7,7 @@
 
 package com.facebook.react.uimanager.events;
 
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.Nullable;
@@ -35,14 +36,20 @@ public class PointerEventHelper {
     MOVE_CAPTURE,
     UP,
     UP_CAPTURE,
+    OUT,
+    OUT_CAPTURE,
+    OVER,
+    OVER_CAPTURE,
   };
 
   public static final String POINTER_CANCEL = "topPointerCancel";
   public static final String POINTER_DOWN = "topPointerDown";
-  public static final String POINTER_ENTER = "topPointerEnter2";
-  public static final String POINTER_LEAVE = "topPointerLeave2";
-  public static final String POINTER_MOVE = "topPointerMove2";
+  public static final String POINTER_ENTER = "topPointerEnter";
+  public static final String POINTER_LEAVE = "topPointerLeave";
+  public static final String POINTER_MOVE = "topPointerMove";
   public static final String POINTER_UP = "topPointerUp";
+  public static final String POINTER_OVER = "topPointerOver";
+  public static final String POINTER_OUT = "topPointerOut";
 
   /** We don't dispatch capture events from native; that's currently handled by JS. */
   public static @Nullable String getDispatchableEventName(EVENT event) {
@@ -59,10 +66,45 @@ public class PointerEventHelper {
         return PointerEventHelper.POINTER_CANCEL;
       case UP:
         return PointerEventHelper.POINTER_UP;
+      case OVER:
+        return PointerEventHelper.POINTER_OVER;
+      case OUT:
+        return PointerEventHelper.POINTER_OUT;
       default:
         FLog.e(ReactConstants.TAG, "No dispatchable event name for type: " + event);
         return null;
     }
+  }
+
+  // https://w3c.github.io/pointerevents/#the-button-property
+  public static int getButtonChange(int lastButtonState, int currentButtonState) {
+    int changedMask = currentButtonState ^ lastButtonState;
+    if (changedMask == 0) {
+      return -1;
+    }
+
+    switch (changedMask) {
+      case MotionEvent.BUTTON_PRIMARY: // left button, touch/pen contact
+        return 0;
+      case MotionEvent.BUTTON_TERTIARY: // middle mouse
+        return 1;
+      case MotionEvent.BUTTON_SECONDARY: // rightbutton, Pen barrel button
+        return 2;
+      case MotionEvent.BUTTON_BACK:
+        return 3;
+      case MotionEvent.BUTTON_FORWARD:
+        return 4;
+        // TOD0 - Pen eraser button maps to what?
+    }
+    return -1;
+  }
+
+  public static boolean isPrimary(int pointerId, int primaryPointerId, MotionEvent event) {
+    if (supportsHover(event)) {
+      return true;
+    }
+
+    return pointerId == primaryPointerId;
   }
 
   public static String getW3CPointerType(final int toolType) {
@@ -95,22 +137,34 @@ public class PointerEventHelper {
       case CANCEL_CAPTURE:
         return true;
       case ENTER:
-        value = view.getTag(R.id.pointer_enter2);
+        value = view.getTag(R.id.pointer_enter);
         break;
       case ENTER_CAPTURE:
-        value = view.getTag(R.id.pointer_enter2_capture);
+        value = view.getTag(R.id.pointer_enter_capture);
         break;
       case LEAVE:
-        value = view.getTag(R.id.pointer_leave2);
+        value = view.getTag(R.id.pointer_leave);
         break;
       case LEAVE_CAPTURE:
-        value = view.getTag(R.id.pointer_leave2_capture);
+        value = view.getTag(R.id.pointer_leave_capture);
         break;
       case MOVE:
-        value = view.getTag(R.id.pointer_move2);
+        value = view.getTag(R.id.pointer_move);
         break;
       case MOVE_CAPTURE:
-        value = view.getTag(R.id.pointer_move2_capture);
+        value = view.getTag(R.id.pointer_move_capture);
+        break;
+      case OVER:
+        value = view.getTag(R.id.pointer_over);
+        break;
+      case OVER_CAPTURE:
+        value = view.getTag(R.id.pointer_over_capture);
+        break;
+      case OUT:
+        value = view.getTag(R.id.pointer_out);
+        break;
+      case OUT_CAPTURE:
+        value = view.getTag(R.id.pointer_out_capture);
         break;
     }
 
@@ -138,23 +192,16 @@ public class PointerEventHelper {
       case POINTER_MOVE:
       case POINTER_ENTER:
       case POINTER_LEAVE:
+      case POINTER_OVER:
+      case POINTER_OUT:
         return EventCategoryDef.CONTINUOUS;
     }
 
     return EventCategoryDef.UNSPECIFIED;
   }
 
-  public static boolean supportsHover(final int toolType) {
-    String pointerType = getW3CPointerType(toolType);
-
-    if (pointerType.equals(POINTER_TYPE_MOUSE)) {
-      return true;
-    } else if (pointerType.equals(POINTER_TYPE_PEN)) {
-      return true; // true?
-    } else if (pointerType.equals(POINTER_TYPE_TOUCH)) {
-      return false;
-    }
-
-    return false;
+  public static boolean supportsHover(MotionEvent motionEvent) {
+    int source = motionEvent.getSource();
+    return source == InputDevice.SOURCE_MOUSE || source == InputDevice.SOURCE_CLASS_POINTER;
   }
 }

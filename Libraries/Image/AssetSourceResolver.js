@@ -35,7 +35,7 @@ const {
 /**
  * Returns a path like 'assets/AwesomeModule/icon@2x.png'
  */
-function getScaledAssetPath(asset): string {
+function getScaledAssetPath(asset: PackagerAsset): string {
   const scale = pickScale(asset.scales, PixelRatio.get());
   const scaleSuffix = scale === 1 ? '' : '@' + scale + 'x';
   const assetDir = getBasePath(asset);
@@ -45,11 +45,11 @@ function getScaledAssetPath(asset): string {
 /**
  * Returns a path like 'drawable-mdpi/icon.png'
  */
-function getAssetPathInDrawableFolder(asset): string {
+function getAssetPathInDrawableFolder(asset: PackagerAsset): string {
   const scale = pickScale(asset.scales, PixelRatio.get());
-  const drawbleFolder = getAndroidResourceFolderName(asset, scale);
+  const drawableFolder = getAndroidResourceFolderName(asset, scale);
   const fileName = getAndroidResourceIdentifier(asset);
-  return drawbleFolder + '/' + fileName + '.' + asset.type;
+  return drawableFolder + '/' + fileName + '.' + asset.type;
 }
 
 class AssetSourceResolver {

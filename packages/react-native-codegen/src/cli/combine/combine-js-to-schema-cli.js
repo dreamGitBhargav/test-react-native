@@ -4,9 +4,9 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+react_native
  * @flow strict-local
  * @format
+ * @oncall react_native
  */
 
 'use strict';
@@ -27,7 +27,9 @@ function filterJSFile(file: string) {
     // NativeSampleTurboModule is for demo purpose. It should be added manually to the
     // app for now.
     !file.endsWith('NativeSampleTurboModule.js') &&
-    !file.includes('__tests')
+    !file.includes('__tests') &&
+    // Ignore TypeScript type declaration files.
+    !file.endsWith('.d.ts')
   );
 }
 

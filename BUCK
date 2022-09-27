@@ -10,7 +10,6 @@ load(
 )
 load(
     "//tools/build_defs/oss:rn_defs.bzl",
-    "APPLETVOS",
     "HERMES_BYTECODE_VERSION",
     "IOS",
     "RCT_IMAGE_DATA_DECODER_SOCKET",
@@ -58,9 +57,9 @@ fb_native.genrule(
     ) + [
         react_native_root_target("packages/rn-tester:nativecomponent-srcs"),
     ],
-    labels = ["uses_hg"],
-    cmd = "$(exe {}) $OUT $SRCS".format(react_native_root_target("packages/react-native-codegen:write_to_json")),
     out = "schema-rncore.json",
+    cmd = "$(exe {}) $OUT $SRCS".format(react_native_root_target("packages/react-native-codegen:write_to_json")),
+    labels = ["uses_hg"],
 )
 
 rn_codegen_components(
@@ -111,7 +110,6 @@ rn_xplat_cxx_library2(
         ":RCTCxxUtils",
         ":ReactInternal",
         "//fbobjc/Libraries/FBReactKit:RCTFBSystrace",
-        "//xplat/folly:molly",
         react_native_root_target("React/CoreModules:CoreModules"),
         react_native_xplat_target("cxxreact:bridge"),
         react_native_xplat_target("cxxreact:jsbigstring"),
@@ -165,7 +163,6 @@ rn_xplat_cxx_library2(
         ":RCTCxxUtils",
         ":ReactInternal",
         "//xplat/fbsystrace:fbsystrace",
-        "//xplat/folly:headers_only_do_not_use",
         react_native_xplat_target("cxxreact:module"),
         react_native_xplat_target("cxxreact:bridge"),
         react_native_xplat_target("reactperflogger:reactperflogger"),
@@ -189,7 +186,7 @@ rn_xplat_cxx_library2(
         exclude = RCTCXXMODULE_PUBLIC_HEADERS.values(),
         prefix = "React",
     ),
-    apple_sdks = (IOS, APPLETVOS),
+    apple_sdks = (IOS,),
     contacts = ["oncall+react_native@xmail.facebook.com"],
     fbobjc_enable_exceptions = True,
     frameworks = [
@@ -202,7 +199,7 @@ rn_xplat_cxx_library2(
     preprocessor_flags = get_objc_arc_preprocessor_flags() + get_preprocessor_flags_for_build_mode(),
     visibility = ["PUBLIC"],
     deps = [
-        "//xplat/folly:molly",
+        "//xplat/folly:dynamic",
     ],
 )
 
@@ -249,14 +246,17 @@ REACT_PUBLIC_HEADERS = {
     "React/RCTAnimationType.h": RCTVIEWS_PATH + "RCTAnimationType.h",
     "React/RCTAssert.h": RCTBASE_PATH + "RCTAssert.h",
     "React/RCTAutoInsetsProtocol.h": RCTVIEWS_PATH + "RCTAutoInsetsProtocol.h",
+    "React/RCTBorderCurve.h": RCTVIEWS_PATH + "RCTBorderCurve.h",
     "React/RCTBorderDrawing.h": RCTVIEWS_PATH + "RCTBorderDrawing.h",
     "React/RCTBorderStyle.h": RCTVIEWS_PATH + "RCTBorderStyle.h",
     "React/RCTBridge+Private.h": RCTBASE_PATH + "RCTBridge+Private.h",
     "React/RCTBridge.h": RCTBASE_PATH + "RCTBridge.h",
+    "React/RCTBridgeConstants.h": RCTBASE_PATH + "RCTBridgeConstants.h",
     "React/RCTBridgeDelegate.h": RCTBASE_PATH + "RCTBridgeDelegate.h",
     "React/RCTBridgeMethod.h": RCTBASE_PATH + "RCTBridgeMethod.h",
     "React/RCTBridgeModule.h": RCTBASE_PATH + "RCTBridgeModule.h",
     "React/RCTBridgeModuleDecorator.h": RCTBASE_PATH + "RCTBridgeModuleDecorator.h",
+    "React/RCTBundleManager.h": RCTBASE_PATH + "RCTBundleManager.h",
     "React/RCTBundleURLProvider.h": RCTBASE_PATH + "RCTBundleURLProvider.h",
     "React/RCTComponent.h": RCTVIEWS_PATH + "RCTComponent.h",
     "React/RCTComponentData.h": RCTVIEWS_PATH + "RCTComponentData.h",
@@ -339,6 +339,7 @@ REACT_PUBLIC_HEADERS = {
     "React/RCTSurfaceView.h": RCTBASE_PATH + "Surface/RCTSurfaceView.h",
     "React/RCTTextDecorationLineType.h": RCTVIEWS_PATH + "RCTTextDecorationLineType.h",
     "React/RCTTouchHandler.h": RCTBASE_PATH + "RCTTouchHandler.h",
+    "React/RCTTurboModuleRegistry.h": RCTBASE_PATH + "RCTTurboModuleRegistry.h",
     "React/RCTUIManager.h": RCTMODULES_PATH + "RCTUIManager.h",
     "React/RCTUIManagerObserverCoordinator.h": RCTMODULES_PATH + "RCTUIManagerObserverCoordinator.h",
     "React/RCTUIManagerUtils.h": RCTMODULES_PATH + "RCTUIManagerUtils.h",
@@ -600,10 +601,11 @@ rn_apple_library(
     contacts = ["oncall+react_native@xmail.facebook.com"],
     extension_api_only = True,
     frameworks = [
-        "$PLATFORM_DIR/Developer/Library/Frameworks/Foundation.framework",
+        "Foundation",
     ],
     inherited_buck_flags = get_static_library_ios_flags(),
     labels = [
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -737,6 +739,7 @@ rn_library(
             "**/__*__/**",
             "**/gulpfile.js",
             "Libraries/Components/Switch/SwitchSchema.js",
+            "**/*._reactvr.js",
         ],
     ),
     labels = [
@@ -762,7 +765,6 @@ rn_library(
         "//xplat/js:node_modules__use_19sync_19external_19store",
         "//xplat/js:node_modules__whatwg_19fetch",
         "//xplat/js/RKJSModules/Libraries/Polyfills:Polyfills",
-        "//xplat/js/RKJSModules/Libraries/React:React",
         "//xplat/js/RKJSModules/vendor/react:react",
         "//xplat/js/RKJSModules/vendor/react-test-renderer:react-test-renderer",
         "//xplat/js/RKJSModules/vendor/scheduler:scheduler",
@@ -829,6 +831,7 @@ rn_apple_library(
         "depslint_never_remove",  # Some old NativeModule still relies on +load unfortunately.
         "disable_plugins_only_validation",
         "extension_api_allow_unsafe_unavailable_usages",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -879,6 +882,7 @@ rn_apple_library(
     labels = [
         "depslint_never_remove",  # Some old NativeModule still relies on +load unfortunately.
         "disable_plugins_only_validation",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -938,6 +942,7 @@ rn_apple_library(
         "depslint_never_remove",  # Some old NativeModule still relies on +load unfortunately.
         "disable_plugins_only_validation",
         "extension_api_allow_unsafe_unavailable_usages",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -986,6 +991,7 @@ rn_apple_library(
         "depslint_never_remove",  # Some old NativeModule still relies on +load unfortunately.
         "disable_plugins_only_validation",
         "extension_api_allow_unsafe_unavailable_usages",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -1038,6 +1044,7 @@ rn_apple_library(
         "depslint_never_remove",  # Some old NativeModule still relies on +load unfortunately.
         "disable_plugins_only_validation",
         "extension_api_allow_unsafe_unavailable_usages",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -1119,6 +1126,7 @@ rn_apple_library(
         "depslint_never_remove",  # Some old NativeModule still relies on +load unfortunately.
         "disable_plugins_only_validation",
         "extension_api_allow_unsafe_unavailable_usages",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],
@@ -1286,6 +1294,7 @@ rn_apple_library(
     labels = [
         "depslint_never_remove",
         "disable_plugins_only_validation",
+        "fbios_link_group:xplat/default/public.react_native.infra",
         "pfh:ReactNative_CommonInfrastructurePlaceholder",
         "supermodule:xplat/default/public.react_native.infra",
     ],

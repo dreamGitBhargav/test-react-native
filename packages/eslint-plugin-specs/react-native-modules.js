@@ -4,8 +4,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails react_native
  * @format
+ * @oncall react_native
  */
 
 'use strict';
@@ -13,7 +13,7 @@
 const path = require('path');
 const withBabelRegister = require('./with-babel-register');
 
-// We run yarn prepublish before publishing package which will set this value to true
+// We use the prepack hook before publishing package to set this value to true
 const PACKAGE_USAGE = false;
 const ERRORS = {
   misnamedHasteModule(hasteModuleName) {
@@ -134,7 +134,7 @@ function rule(context) {
       const [parsingErrors, tryParse] = createParserErrorCapturer();
 
       const sourceCode = context.getSourceCode().getText();
-      const ast = flowParser.parse(sourceCode);
+      const ast = flowParser.parse(sourceCode, {enums: true});
 
       tryParse(() => {
         buildModuleSchema(hasteModuleName, ast, tryParse);

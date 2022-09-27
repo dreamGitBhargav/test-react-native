@@ -8,31 +8,29 @@
  * @format
  */
 
-import * as React from 'react';
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
 
+import ScrollViewPressableStickyHeaderExample from './ScrollViewPressableStickyHeaderExample';
+import nullthrows from 'nullthrows';
+import * as React from 'react';
+import {useCallback, useState} from 'react';
 import {
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  TextInput,
-  RefreshControl,
 } from 'react-native';
 
-import nullthrows from 'nullthrows';
-
-import {useState, useCallback} from 'react';
-import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {ViewStyleProp} from 'react-native/Libraries/StyleSheet/StyleSheet';
-import ScrollViewPressableStickyHeaderExample from './ScrollViewPressableStickyHeaderExample';
-
 class EnableDisableList extends React.Component<{}, {scrollEnabled: boolean}> {
-  state = {
+  state: {scrollEnabled: boolean} = {
     scrollEnabled: true,
   };
-  render() {
+  render(): React.Node {
     return (
       <View>
         <ScrollView
@@ -66,12 +64,12 @@ class AppendingList extends React.Component<
   {},
   {items: Array<React.Element<typeof Item>>},
 > {
-  state = {
+  state: {items: Array<React.Element<typeof Item>>} = {
     items: [...Array(AppendingListItemCount)].map((_, ii) => (
       <Item msg={`Item ${ii}`} />
     )),
   };
-  render() {
+  render(): React.Node {
     return (
       <View>
         <ScrollView
@@ -205,6 +203,7 @@ const examples = ([
       return (
         <View>
           <ScrollView
+            accessibilityRole="grid"
             ref={scrollView => {
               _scrollView = scrollView;
             }}
@@ -569,7 +568,7 @@ const SnapToOptions = () => {
   const snapToAlignmentModes = ['start', 'center', 'end'];
   const [snapToEnd, setSnapToEnd] = useState(true);
   const [snapToInterval, setSnapToInterval] = useState(0);
-  const [snapToOffsets, setSnapToOffsets] = useState([]);
+  const [snapToOffsets, setSnapToOffsets] = useState<Array<number>>([]);
   const [snapToStart, setSnapToStart] = useState(true);
 
   return (
@@ -654,10 +653,15 @@ const ScrollToOptions = () => {
 };
 
 const ScrollIndicatorExample = () => {
-  const [scrollIndicatorInsets, setScrollIndicatorInsets] = useState(null);
+  const [scrollIndicatorInsets, setScrollIndicatorInsets] = useState<null | {
+    bottom: number,
+    left: number,
+    right: number,
+    top: number,
+  }>(null);
   const [showsHorizontalScrollIndic, setShowsHorizontalScrollIndic] =
     useState(true);
-  const [showsVerticallScrollIndic, setShowsVerticalScrollIndic] =
+  const [showsVerticalScrollIndic, setShowsVerticalScrollIndic] =
     useState(true);
   return (
     <View>
@@ -666,7 +670,7 @@ const ScrollIndicatorExample = () => {
         contentInset={{top: 10, bottom: 10, left: 10, right: 10}}
         scrollIndicatorInsets={scrollIndicatorInsets}
         showsHorizontalScrollIndicator={showsHorizontalScrollIndic}
-        showsVerticalScrollIndicator={showsVerticallScrollIndic}
+        showsVerticalScrollIndicator={showsVerticalScrollIndic}
         nestedScrollEnabled>
         {ITEMS.map(createItemRow)}
       </ScrollView>
@@ -698,10 +702,9 @@ const ScrollIndicatorExample = () => {
       />
       <Button
         label={
-          'showsVerticalScrollIndicator: ' +
-          showsVerticallScrollIndic.toString()
+          'showsVerticalScrollIndicator: ' + showsVerticalScrollIndic.toString()
         }
-        onPress={() => setShowsVerticalScrollIndic(!showsVerticallScrollIndic)}
+        onPress={() => setShowsVerticalScrollIndic(!showsVerticalScrollIndic)}
       />
     </View>
   );
@@ -732,7 +735,7 @@ const RefreshControlExample = () => {
     wait(2000).then(() => setRefreshing(false));
   }, []);
 
-  const wait = timeout => {
+  const wait = (timeout: number) => {
     return new Promise(resolve => {
       setTimeout(resolve, timeout);
     });
@@ -1101,8 +1104,15 @@ const DecelerationRateExample = () => {
 
 const ContentExample = () => {
   const [canCancelContentTouches, setCanCancelContentTouches] = useState(false);
-  const [contentInset, setContentInset] = useState(null);
-  const [contentContainerStyle, setContentContainerStyle] = useState(null);
+  const [contentInset, setContentInset] = useState<null | {
+    bottom: number,
+    left: number,
+    right: number,
+    top: number,
+  }>(null);
+  const [contentContainerStyle, setContentContainerStyle] = useState<null | {
+    backgroundColor: string,
+  }>(null);
   const [contentInsetAdjustmentBehavior, setContentInsetAdjustmentBehavior] =
     useState('never');
   return (
@@ -1242,7 +1252,7 @@ class Item extends React.PureComponent<{|
   msg?: string,
   style?: ViewStyleProp,
 |}> {
-  render() {
+  render(): $FlowFixMe {
     return (
       <View style={[styles.item, this.props.style]}>
         <Text>{this.props.msg}</Text>
@@ -1253,7 +1263,9 @@ class Item extends React.PureComponent<{|
 
 let ITEMS = [...Array(12)].map((_, i) => `Item ${i}`);
 
-const createItemRow = (msg, index) => <Item key={index} msg={msg} />;
+const createItemRow = (msg: string, index: number) => (
+  <Item key={index} msg={msg} />
+);
 
 const Button = (props: {
   active?: boolean,

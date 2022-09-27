@@ -11,6 +11,7 @@ import android.content.Context;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.BaseJavaModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -36,18 +37,28 @@ import java.util.Stack;
 public abstract class ViewManager<T extends View, C extends ReactShadowNode>
     extends BaseJavaModule {
 
+  private static String NAME = ViewManager.class.getSimpleName();
+
   /**
    * For View recycling: we store a Stack of unused, dead Views. This is null by default, and when
    * null signals that View Recycling is disabled. `enableViewRecycling` must be explicitly called
    * in a concrete constructor to enable View Recycling per ViewManager.
    */
-  private HashMap<Integer, Stack<T>> mRecyclableViews = null;
+  @Nullable private HashMap<Integer, Stack<T>> mRecyclableViews = null;
+
+  private int mRecyclableViewsBufferSize = 1024;
 
   /** Call in constructor of concrete ViewManager class to enable. */
-  protected void enableViewRecycling() {
+  protected void setupViewRecycling() {
     if (ReactFeatureFlags.enableViewRecycling) {
       mRecyclableViews = new HashMap<>();
     }
+  }
+
+  /** Call in constructor of concrete ViewManager class to enable. */
+  protected void setupViewRecycling(int bufferSize) {
+    mRecyclableViewsBufferSize = bufferSize;
+    setupViewRecycling();
   }
 
   private @Nullable Stack<T> getRecyclableViewStack(int surfaceId) {
@@ -55,7 +66,7 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode>
       return null;
     }
     if (!mRecyclableViews.containsKey(surfaceId)) {
-      mRecyclableViews.put(surfaceId, new Stack<>());
+      mRecyclableViews.put(surfaceId, new Stack<T>());
     }
     return mRecyclableViews.get(surfaceId);
   }
@@ -191,12 +202,34 @@ public abstract class ViewManager<T extends View, C extends ReactShadowNode>
    * {@link ViewManager} subclass.
    */
   public void onDropViewInstance(@NonNull T view) {
-    @Nullable
-    Stack<T> recyclableViews =
-        getRecyclableViewStack(((ThemedReactContext) view.getContext()).getSurfaceId());
-    // By default we treat views as recyclable
-    if (recyclableViews != null) {
-      recyclableViews.push(prepareToRecycleView((ThemedReactContext) view.getContext(), view));
+    // Some legacy components will return an Activity here instead of a ThemedReactContext
+    Context viewContext = view.getContext();
+    if (viewContext == null) {
+      // Who knows! Anything is possible. Checking instanceof on null is an NPE,
+      // So this is not redundant.
+      FLog.e(NAME, "onDropViewInstance: view [" + view.getId() + "] has a null context");
+      return;
+    }
+    if (!(viewContext instanceof ThemedReactContext)) {
+      FLog.e(
+          NAME,
+          "onDropViewInstance: view ["
+              + view.getId()
+              + "] has a context that is not a ThemedReactContext: "
+              + viewContext);
+      return;
+    }
+
+    // View recycling
+    ThemedReactContext themedReactContext = (ThemedReactContext) viewContext;
+    int surfaceId = themedReactContext.getSurfaceId();
+    @Nullable Stack<T> recyclableViews = getRecyclableViewStack(surfaceId);
+
+    // Any max buffer size <0 results in an infinite buffer size
+    if (recyclableViews != null
+        && (mRecyclableViewsBufferSize < 0
+            || recyclableViews.size() < mRecyclableViewsBufferSize)) {
+      recyclableViews.push(prepareToRecycleView(themedReactContext, view));
     }
   }
 
