@@ -35,6 +35,7 @@ project.xcworkspace
 /ReactAndroid/build/generated
 /ReactAndroid/build/intermediates
 /ReactAndroid/build/kotlin
+/ReactAndroid/build/outputs/logs
 /ReactAndroid/build/publications
 /ReactAndroid/build/snapshot
 /ReactAndroid/build/third-party-ndk
@@ -43,7 +44,14 @@ project.xcworkspace
 /ReactAndroid/gradle/
 /ReactAndroid/gradlew
 /ReactAndroid/gradlew.bat
-/ReactAndroid/hermes-engine/build/
+/ReactAndroid/hermes-engine/build/generated
+/ReactAndroid/hermes-engine/build/hermes
+#/ReactAndroid/hermes-engine/build/outputs
+/ReactAndroid/hermes-engine/build/outputs/logs
+/ReactAndroid/hermes-engine/build/intermediates
+/ReactAndroid/hermes-engine/build/prefab-headers
+/ReactAndroid/hermes-engine/build/publications
+/ReactAndroid/hermes-engine/build/tmp
 /ReactAndroid/hermes-engine/.cxx/
 /template/android/app/build/
 /template/android/build/
