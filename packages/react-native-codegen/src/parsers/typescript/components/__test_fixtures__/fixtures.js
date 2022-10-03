@@ -1095,6 +1095,49 @@ export default codegenNativeComponent<ModuleProps>(
 ) as NativeType;
 `;
 
+const PROPS_AND_EVENTS_WITH_INTERFACES = `
+import type {
+  BubblingEventHandler,
+  DirectEventHandler,
+  Int32,
+} from 'CodegenTypes';
+import type {ViewProps} from 'ViewPropTypes';
+import type {HostComponent} from 'react-native';
+
+const codegenNativeComponent = require('codegenNativeComponent');
+
+export interface Base1 {
+  readonly x: string;
+}
+
+export interface Base2 {
+  readonly y: Int32;
+}
+
+export interface Derived extends Base1, Base2 {
+  readonly z: boolean;
+}
+
+export interface ModuleProps extends ViewProps {
+  // Props
+  ordinary_prop: Derived;
+  readonly_prop: Readonly<Derived>;
+  ordinary_array_prop?: readonly Derived[];
+  readonly_array_prop?: readonly Readonly<Derived>[];
+  ordinary_nested_array_prop?: readonly Derived[][];
+  readonly_nested_array_prop?: readonly Readonly<Derived>[][];
+
+  // Events
+  onDirect: DirectEventHandler<Derived>;
+  onBubbling: BubblingEventHandler<Readonly<Derived>>;
+}
+
+export default codegenNativeComponent<ModuleProps>('Module', {
+  interfaceOnly: true,
+  paperComponentName: 'RCTModule',
+}) as HostComponent<ModuleProps>;
+`;
+
 // === STATE ===
 const ALL_STATE_TYPES = `
 /**
@@ -1166,6 +1209,10 @@ export interface ModuleNativeState {
   float_null_optional_key?: WithDefault<Float, null>;
   float_null_optional_both?: WithDefault<Float, null>;
 
+  // Float props, negative default
+  negative_float_optional_key?: WithDefault<Float, -1.0>;
+  negative_float_optional_both?: WithDefault<Float, -1.0>;
+
   // Int32 props
   int32_required: Int32;
   int32_optional_key?: WithDefault<Int32, 1>;
@@ -1217,6 +1264,46 @@ export interface ModuleNativeState {
   insets_optional_key?: EdgeInsetsValue;
   insets_optional_value: EdgeInsetsValue | null | undefined;
   insets_optional_both?: EdgeInsetsValue | null | undefined;
+}
+
+export default codegenNativeComponent<ModuleProps>(
+  'Module',
+) as HostComponent<ModuleProps>;
+`;
+
+const STATE_NEGATIVE_DEFAULTS = `
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @format
+ */
+
+'use strict';
+
+const codegenNativeComponent = require('codegenNativeComponent');
+
+import type {Int32, Double, Float, WithDefault} from 'CodegenTypes';
+import type {ImageSource} from 'ImageSource';
+import type {
+  ColorValue,
+  ColorArrayValue,
+  PointValue,
+  EdgeInsetsValue,
+} from 'StyleSheetTypes';
+import type {ViewProps} from 'ViewPropTypes';
+import type {HostComponent} from 'react-native';
+
+export interface ModuleProps extends ViewProps { }
+
+export interface ModuleNativeState {
+
+  // Negative numbers default
+  negative_float_optional_key?: WithDefault<Float, -1.0>;
+  negative_int_optional_key?: WithDefault<Int32, -1>;
+  negative_double_optional_key?: WithDefault<Double, -1.0>;
 }
 
 export default codegenNativeComponent<ModuleProps>(
@@ -1630,8 +1717,10 @@ module.exports = {
   COMMANDS_DEFINED_WITH_ALL_TYPES,
   PROPS_AS_EXTERNAL_TYPES,
   COMMANDS_WITH_EXTERNAL_TYPES,
+  PROPS_AND_EVENTS_WITH_INTERFACES,
   ALL_STATE_TYPES,
   ARRAY_STATE_TYPES,
   ARRAY2_STATE_TYPES,
   OBJECT_STATE_TYPES,
+  STATE_NEGATIVE_DEFAULTS,
 };

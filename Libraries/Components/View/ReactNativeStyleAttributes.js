@@ -9,6 +9,8 @@
  */
 
 import type {AnyAttributeType} from '../../Renderer/shims/ReactNativeTypes';
+
+import processAspectRatio from '../../StyleSheet/processAspectRatio';
 import processColor from '../../StyleSheet/processColor';
 import processFontVariant from '../../StyleSheet/processFontVariant';
 import processTransform from '../../StyleSheet/processTransform';
@@ -23,7 +25,7 @@ const ReactNativeStyleAttributes: {[string]: AnyAttributeType, ...} = {
   alignContent: true,
   alignItems: true,
   alignSelf: true,
-  aspectRatio: true,
+  aspectRatio: {process: processAspectRatio},
   borderBottomWidth: true,
   borderEndWidth: true,
   borderLeftWidth: true,
