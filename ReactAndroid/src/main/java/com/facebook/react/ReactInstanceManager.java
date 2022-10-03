@@ -136,6 +136,7 @@ import java.util.Set;
 public class ReactInstanceManager {
 
   private static final String TAG = ReactInstanceManager.class.getSimpleName();
+  private static final String TAG1 = "BhargavCustomBuild";
 
   /**
    * Listener interface for react instance events. This class extends {@Link

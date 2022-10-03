@@ -67,7 +67,9 @@ public class ReactInstanceManagerBuilder {
   private @Nullable ReactPackageTurboModuleManagerDelegate.Builder mTMMDelegateBuilder;
   private @Nullable SurfaceDelegateFactory mSurfaceDelegateFactory;
 
-  /* package protected */ ReactInstanceManagerBuilder() {}
+  /* package protected */ ReactInstanceManagerBuilder() {
+    System.out.println("Hello from custom rn");
+  }
 
   /** Sets a provider of {@link UIImplementation}. Uses default provider if null is passed. */
   public ReactInstanceManagerBuilder setUIImplementationProvider(
