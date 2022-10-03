@@ -62,7 +62,7 @@ buck-out
 .gradle
 local.properties
 *.iml
-/android/
+/android/com/facebook/react/hermes-engine
 
 # Node
 node_modules
