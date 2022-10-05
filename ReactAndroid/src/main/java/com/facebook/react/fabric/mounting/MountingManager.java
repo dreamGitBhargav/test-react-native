@@ -9,13 +9,14 @@ package com.facebook.react.fabric.mounting;
 
 import static com.facebook.infer.annotation.ThreadConfined.ANY;
 import static com.facebook.infer.annotation.ThreadConfined.UI;
+import static com.facebook.react.common.ReactConstants.TAG1;
 
 import android.view.View;
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactSoftExceptionLogger;
@@ -43,6 +44,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class MountingManager {
   public static final String TAG = MountingManager.class.getSimpleName();
+  public static final String TAG2 = TAG1+MountingManager.class.getSimpleName();
   private static final int MAX_STOPPED_SURFACE_IDS_LENGTH = 15;
 
   @NonNull
@@ -134,7 +136,7 @@ public class MountingManager {
         Integer staleStoppedId = mStoppedSurfaceIds.get(0);
         mSurfaceIdToManager.remove(staleStoppedId.intValue());
         mStoppedSurfaceIds.remove(staleStoppedId);
-        FLog.d(TAG, "Removing stale SurfaceMountingManager: [%d]", staleStoppedId.intValue());
+        DreamLogs.d(TAG2, "Removing stale SurfaceMountingManager: [%d]", staleStoppedId.intValue());
       }
       mStoppedSurfaceIds.add(surfaceId);
 

@@ -7,7 +7,9 @@
 
 package com.facebook.react.bridge;
 
-import com.facebook.common.logging.FLog;
+import static com.facebook.react.common.ReactConstants.TAG1;
+
+import com.facebook.systrace.DreamLogs;
 import com.facebook.proguard.annotations.DoNotStrip;
 import java.lang.reflect.Method;
 
@@ -32,7 +34,7 @@ public class ReactCxxErrorHandler {
         parameters[0] = new Exception(message);
         mHandleErrorFunc.invoke(mObject, parameters);
       } catch (Exception e) {
-        FLog.e("ReactCxxErrorHandler", "Failed to invole error hanlder function", e);
+        DreamLogs.e(TAG1+"ReactCxxErrorHandler", "Failed to invole error hanlder function", e);
       }
     }
   }

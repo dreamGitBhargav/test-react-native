@@ -8,11 +8,12 @@
 package com.facebook.react;
 
 import androidx.annotation.NonNull;
-import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.ModuleHolder;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.common.ReactConstants;
+import com.facebook.systrace.DreamLogs;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,8 +30,8 @@ public class ReactPackageHelper {
       ReactPackage reactPackage,
       ReactApplicationContext reactApplicationContext,
       ReactInstanceManager reactInstanceManager) {
-    FLog.d(
-        ReactConstants.TAG,
+    DreamLogs.d(
+        ReactConstants.TAG1,
         reactPackage.getClass().getSimpleName()
             + " is not a LazyReactPackage, falling back to old version.");
     final List<NativeModule> nativeModules;

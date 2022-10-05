@@ -8,6 +8,7 @@
 package com.facebook.react;
 
 import static com.facebook.infer.annotation.ThreadConfined.UI;
+import static com.facebook.react.common.ReactConstants.TAG1;
 import static com.facebook.react.uimanager.common.UIManagerType.DEFAULT;
 import static com.facebook.react.uimanager.common.UIManagerType.FABRIC;
 import static com.facebook.systrace.Systrace.TRACE_TAG_REACT_JAVA_BRIDGE;
@@ -31,7 +32,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.react.bridge.Arguments;
@@ -86,7 +87,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     void onAttachedToReactInstance(ReactRootView rootView);
   }
 
-  private static final String TAG = "ReactRootView";
+  private static final String TAG = TAG1+"ReactRootView";
   private @Nullable ReactInstanceManager mReactInstanceManager;
   private @Nullable String mJSModuleName;
   private @Nullable Bundle mAppProperties;
@@ -231,15 +232,15 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (mReactInstanceManager == null
         || !mIsAttachedToInstance
         || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
+      DreamLogs.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
       return false;
     }
     if (mJSTouchDispatcher == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS before the dispatcher is available");
+      DreamLogs.w(TAG, "Unable to dispatch touch to JS before the dispatcher is available");
       return false;
     }
     if (ReactFeatureFlags.dispatchPointerEvents && mJSPointerDispatcher == null) {
-      FLog.w(TAG, "Unable to dispatch pointer events to JS before the dispatcher is available");
+      DreamLogs.w(TAG, "Unable to dispatch pointer events to JS before the dispatcher is available");
       return false;
     }
 
@@ -301,7 +302,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (mReactInstanceManager == null
         || !mIsAttachedToInstance
         || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(TAG, "Unable to handle key event as the catalyst instance has not been attached");
+      DreamLogs.w(TAG, "Unable to handle key event as the catalyst instance has not been attached");
       return super.dispatchKeyEvent(ev);
     }
     mAndroidHWInputDeviceHelper.handleKeyEvent(ev);
@@ -313,7 +314,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (mReactInstanceManager == null
         || !mIsAttachedToInstance
         || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(
+      DreamLogs.w(
           TAG,
           "Unable to handle focus changed event as the catalyst instance has not been attached");
       super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
@@ -328,7 +329,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (mReactInstanceManager == null
         || !mIsAttachedToInstance
         || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(
+      DreamLogs.w(
           TAG,
           "Unable to handle child focus changed event as the catalyst instance has not been attached");
       super.requestChildFocus(child, focused);
@@ -342,14 +343,14 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (mReactInstanceManager == null
         || !mIsAttachedToInstance
         || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
+      DreamLogs.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
       return;
     }
     if (mJSPointerDispatcher == null) {
       if (!ReactFeatureFlags.dispatchPointerEvents) {
         return;
       }
-      FLog.w(TAG, "Unable to dispatch pointer events to JS before the dispatcher is available");
+      DreamLogs.w(TAG, "Unable to dispatch pointer events to JS before the dispatcher is available");
       return;
     }
     ReactContext reactContext = mReactInstanceManager.getCurrentReactContext();
@@ -365,11 +366,11 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     if (mReactInstanceManager == null
         || !mIsAttachedToInstance
         || mReactInstanceManager.getCurrentReactContext() == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
+      DreamLogs.w(TAG, "Unable to dispatch touch to JS as the catalyst instance has not been attached");
       return;
     }
     if (mJSTouchDispatcher == null) {
-      FLog.w(TAG, "Unable to dispatch touch to JS before the dispatcher is available");
+      DreamLogs.w(TAG, "Unable to dispatch touch to JS before the dispatcher is available");
       return;
     }
     ReactContext reactContext = mReactInstanceManager.getCurrentReactContext();
@@ -568,7 +569,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     ReactMarker.logMarker(ReactMarkerConstants.ROOT_VIEW_UPDATE_LAYOUT_SPECS_START);
     if (mReactInstanceManager == null) {
       ReactMarker.logMarker(ReactMarkerConstants.ROOT_VIEW_UPDATE_LAYOUT_SPECS_END);
-      FLog.w(TAG, "Unable to update root layout specs for uninitialized ReactInstanceManager");
+      DreamLogs.w(TAG, "Unable to update root layout specs for uninitialized ReactInstanceManager");
       return;
     }
     // In Fabric we cannot call `updateRootLayoutSpecs` until a SurfaceId has been set.
@@ -576,7 +577,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
     boolean isFabricEnabled = isFabric();
     if (isFabricEnabled && !isRootViewTagSet()) {
       ReactMarker.logMarker(ReactMarkerConstants.ROOT_VIEW_UPDATE_LAYOUT_SPECS_END);
-      FLog.e(TAG, "Unable to update root layout specs for ReactRootView: no rootViewTag set yet");
+      DreamLogs.e(TAG, "Unable to update root layout specs for ReactRootView: no rootViewTag set yet");
       return;
     }
 

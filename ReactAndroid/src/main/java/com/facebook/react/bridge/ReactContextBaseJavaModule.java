@@ -8,6 +8,7 @@
 package com.facebook.react.bridge;
 
 import static com.facebook.infer.annotation.ThreadConfined.ANY;
+import static com.facebook.react.common.ReactConstants.TAG1;
 
 import android.app.Activity;
 import androidx.annotation.Nullable;
@@ -15,6 +16,7 @@ import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.react.common.build.ReactBuildConfig;
+import com.facebook.systrace.DreamLogs;
 
 /**
  * Base class for Catalyst native modules that require access to the {@link ReactContext} instance.
@@ -59,9 +61,9 @@ public abstract class ReactContextBaseJavaModule extends BaseJavaModule {
     // We want to collect data about how often this happens, but SoftExceptions will cause a crash
     // in debug mode, which isn't usually desirable.
     String msg = "Catalyst Instance has already disappeared: requested by " + this.getName();
-    String tag = "ReactContextBaseJavaModule";
-    if (ReactBuildConfig.DEBUG) {
-      FLog.w(tag, msg);
+    String tag = TAG1+"ReactContextBaseJavaModule";
+    if (true/*ReactBuildConfig.DEBUG*/) {
+      DreamLogs.w(tag, msg);
     } else {
       ReactSoftExceptionLogger.logSoftException(tag, new RuntimeException(msg));
     }

@@ -62,7 +62,7 @@ public class ReactFeatureFlags {
   public static boolean useTurboModuleManagerCallbackCleanupScope = false;
 
   /** This feature flag enables logs for Fabric */
-  public static boolean enableFabricLogs = false;
+  public static boolean enableFabricLogs = true;
 
   public static boolean enableRuntimeScheduler = false;
 

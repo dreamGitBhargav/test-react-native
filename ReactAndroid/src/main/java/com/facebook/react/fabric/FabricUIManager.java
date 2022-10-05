@@ -9,6 +9,7 @@ package com.facebook.react.fabric;
 
 import static com.facebook.infer.annotation.ThreadConfined.ANY;
 import static com.facebook.infer.annotation.ThreadConfined.UI;
+import static com.facebook.react.common.ReactConstants.TAG1;
 import static com.facebook.react.fabric.FabricComponents.getFabricComponentName;
 import static com.facebook.react.fabric.mounting.LayoutMetricsConversions.getMaxSize;
 import static com.facebook.react.fabric.mounting.LayoutMetricsConversions.getMinSize;
@@ -30,7 +31,7 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.debug.holder.PrinterHolder;
 import com.facebook.debug.tags.ReactDebugOverlayTags;
 import com.facebook.infer.annotation.ThreadConfined;
@@ -97,14 +98,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @DoNotStripAny
 public class FabricUIManager implements UIManager, LifecycleEventListener {
   public static final String TAG = FabricUIManager.class.getSimpleName();
+  public static final String TAG2 = TAG1+FabricUIManager.class.getSimpleName();
 
   // The IS_DEVELOPMENT_ENVIRONMENT variable is used to log extra data when running fabric in a
   // development environment. DO NOT ENABLE THIS ON PRODUCTION OR YOU WILL BE FIRED!
   public static final boolean IS_DEVELOPMENT_ENVIRONMENT = false && ReactBuildConfig.DEBUG;
-  public static final boolean ENABLE_FABRIC_LOGS =
-      ReactFeatureFlags.enableFabricLogs
+  public static final boolean ENABLE_FABRIC_LOGS = true;
+      /*ReactFeatureFlags.enableFabricLogs
           || PrinterHolder.getPrinter()
-              .shouldDisplayLogMessage(ReactDebugOverlayTags.FABRIC_UI_MANAGER);
+              .shouldDisplayLogMessage(ReactDebugOverlayTags.FABRIC_UI_MANAGER);*/
   public DevToolsReactPerfLogger mDevToolsReactPerfLogger;
 
   static {
@@ -217,7 +219,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     mMountingManager.startSurface(rootTag, reactContext, rootView);
     String moduleName = reactRootView.getJSModuleName();
     if (ENABLE_FABRIC_LOGS) {
-      FLog.d(TAG, "Starting surface for module: %s and reactTag: %d", moduleName, rootTag);
+      DreamLogs.d(TAG2, "Starting surface for module: %s and reactTag: %d", moduleName, rootTag);
     }
     mBinding.startSurface(rootTag, moduleName, (NativeMap) initialProps);
     if (initialUITemplate != null) {
@@ -270,7 +272,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     ThemedReactContext reactContext =
         new ThemedReactContext(mReactApplicationContext, context, moduleName, rootTag);
     if (ENABLE_FABRIC_LOGS) {
-      FLog.d(TAG, "Starting surface for module: %s and reactTag: %d", moduleName, rootTag);
+      DreamLogs.d(TAG2, "Starting surface for module: %s and reactTag: %d", moduleName, rootTag);
     }
     mMountingManager.startSurface(rootTag, reactContext, rootView);
 
@@ -371,8 +373,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
           new DevToolsReactPerfLogger.DevToolsReactPerfLoggerListener() {
             @Override
             public void onFabricCommitEnd(DevToolsReactPerfLogger.FabricCommitPoint commitPoint) {
-              FLog.i(
-                  TAG,
+              DreamLogs.i(
+                  TAG2,
                   "Statistic of Fabric commit #: "
                       + commitPoint.getCommitNumber()
                       + "\n - Total commit time: "
@@ -400,7 +402,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
   @AnyThread
   @ThreadConfined(ANY)
   public void onCatalystInstanceDestroy() {
-    FLog.i(TAG, "FabricUIManager.onCatalystInstanceDestroy");
+    DreamLogs.i(TAG2, "FabricUIManager.onCatalystInstanceDestroy");
 
     if (mDevToolsReactPerfLogger != null) {
       ReactMarker.removeFabricListener(mDevToolsReactPerfLogger);
@@ -587,7 +589,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     ThemedReactContext themedReactContext = surfaceMountingManager.getContext();
 
     if (themedReactContext == null) {
-      FLog.w(TAG, "\"themedReactContext\" is null when call \"getThemeData\"");
+      DreamLogs.w(TAG2, "\"themedReactContext\" is null when call \"getThemeData\"");
       return false;
     }
     float[] defaultTextInputPaddingForTheme =
@@ -681,8 +683,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
         ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_START, null, commitNumber);
 
     if (ENABLE_FABRIC_LOGS) {
-      FLog.d(
-          TAG,
+      DreamLogs.d(
+          TAG2,
           "SynchronouslyUpdateViewOnUIThread for tag %d: %s",
           reactTag,
           (IS_DEVELOPMENT_ENVIRONMENT ? props.toHashMap().toString() : "<hidden>"));
@@ -818,7 +820,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
       final int offsetY) {
 
     if (ENABLE_FABRIC_LOGS) {
-      FLog.d(TAG, "Updating Root Layout Specs for [%d]", surfaceId);
+      DreamLogs.d(TAG2, "Updating Root Layout Specs for [%d]", surfaceId);
     }
 
     SurfaceMountingManager surfaceMountingManager = mMountingManager.getSurfaceManager(surfaceId);
@@ -912,11 +914,11 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
       @Nullable WritableMap params,
       @EventCategoryDef int eventCategory) {
     if (ReactBuildConfig.DEBUG && surfaceId == View.NO_ID) {
-      FLog.d(TAG, "Emitted event without surfaceId: [%d] %s", reactTag, eventName);
+      DreamLogs.d(TAG2, "Emitted event without surfaceId: [%d] %s", reactTag, eventName);
     }
 
     if (mDestroyed) {
-      FLog.e(TAG, "Attempted to receiveEvent after destruction");
+      DreamLogs.e(TAG2, "Attempted to receiveEvent after destruction");
       return;
     }
 
@@ -924,7 +926,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
 
     if (eventEmitter == null) {
       // This can happen if the view has disappeared from the screen (because of async events)
-      FLog.d(TAG, "Unable to invoke event: " + eventName + " for reactTag: " + reactTag);
+      DreamLogs.d(TAG2, "Unable to invoke event: " + eventName + " for reactTag: " + reactTag);
       return;
     }
 
@@ -1048,8 +1050,8 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
               surfaceMountingManager.setJSResponder(
                   reactTag, initialReactTag, blockNativeResponder);
             } else {
-              FLog.e(
-                  TAG, "setJSResponder skipped, surface no longer available [" + surfaceId + "]");
+              DreamLogs.e(
+                  TAG2, "setJSResponder skipped, surface no longer available [" + surfaceId + "]");
             }
           }
 
@@ -1159,7 +1161,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
     @ThreadConfined(UI)
     public void doFrameGuarded(long frameTimeNanos) {
       if (!mIsMountingEnabled || mDestroyed) {
-        FLog.w(TAG, "Not flushing pending UI operations because of previously thrown Exception");
+        DreamLogs.w(TAG2, "Not flushing pending UI operations because of previously thrown Exception");
         return;
       }
 
@@ -1175,7 +1177,7 @@ public class FabricUIManager implements UIManager, LifecycleEventListener {
         mMountItemDispatcher.dispatchPreMountItems(frameTimeNanos);
         mMountItemDispatcher.tryDispatchMountItems();
       } catch (Exception ex) {
-        FLog.e(TAG, "Exception thrown when executing UIFrameGuarded", ex);
+        DreamLogs.e(TAG2, "Exception thrown when executing UIFrameGuarded", ex);
         stop();
         throw ex;
       } finally {

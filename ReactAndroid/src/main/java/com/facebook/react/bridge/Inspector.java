@@ -7,7 +7,7 @@
 
 package com.facebook.react.bridge;
 
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.common.ReactConstants;
@@ -27,7 +27,7 @@ public class Inspector {
     try {
       return Arrays.asList(instance().getPagesNative());
     } catch (UnsatisfiedLinkError e) {
-      FLog.e(ReactConstants.TAG, "Inspector doesn't work in open source yet", e);
+      DreamLogs.e(ReactConstants.TAG1, "Inspector doesn't work in open source yet", e);
       return Collections.emptyList();
     }
   }
@@ -36,7 +36,7 @@ public class Inspector {
     try {
       return instance().connectNative(pageId, remote);
     } catch (UnsatisfiedLinkError e) {
-      FLog.e(ReactConstants.TAG, "Inspector doesn't work in open source yet", e);
+      DreamLogs.e(ReactConstants.TAG1, "Inspector doesn't work in open source yet", e);
       throw new RuntimeException(e);
     }
   }

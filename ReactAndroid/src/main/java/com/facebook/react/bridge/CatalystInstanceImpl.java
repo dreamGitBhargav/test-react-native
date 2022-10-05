@@ -13,7 +13,7 @@ import static com.facebook.systrace.Systrace.TRACE_TAG_REACT_JAVA_BRIDGE;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.jni.HybridData;
@@ -121,7 +121,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
       final NativeModuleRegistry nativeModuleRegistry,
       final JSBundleLoader jsBundleLoader,
       NativeModuleCallExceptionHandler nativeModuleCallExceptionHandler) {
-    FLog.d(ReactConstants.TAG, "Initializing React Xplat Bridge.");
+    DreamLogs.d(ReactConstants.TAG1, "Initializing React Xplat Bridge.");
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "createCatalystInstanceImpl");
 
     if (ReactFeatureFlags.enableRuntimeSchedulerInTurboModule
@@ -146,7 +146,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
     mTraceListener = new JSProfilerTraceListener(this);
     Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
 
-    FLog.d(ReactConstants.TAG, "Initializing React Xplat Bridge before initializeBridge");
+    DreamLogs.d(ReactConstants.TAG1, "Initializing React Xplat Bridge before initializeBridge");
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "initializeCxxBridge");
 
     if (ReactFeatureFlags.warnOnLegacyNativeModuleSystemUse) {
@@ -160,7 +160,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
         mNativeModulesQueueThread,
         mNativeModuleRegistry.getJavaModules(this),
         mNativeModuleRegistry.getCxxModules());
-    FLog.d(ReactConstants.TAG, "Initializing React Xplat Bridge after initializeBridge");
+    DreamLogs.d(ReactConstants.TAG1, "Initializing React Xplat Bridge after initializeBridge");
     Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
 
     mJavaScriptContextHolder = new JavaScriptContextHolder(getJavaScriptContext());
@@ -271,7 +271,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
 
   @Override
   public void runJSBundle() {
-    FLog.d(ReactConstants.TAG, "CatalystInstanceImpl.runJSBundle()");
+    DreamLogs.d(ReactConstants.TAG1, "CatalystInstanceImpl.runJSBundle()");
     Assertions.assertCondition(!mJSBundleHasLoaded, "JS bundle was already loaded!");
     // incrementPendingJSCalls();
     mJSBundleLoader.loadScript(CatalystInstanceImpl.this);
@@ -316,7 +316,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
   public void callFunction(PendingJSCall function) {
     if (mDestroyed) {
       final String call = function.toString();
-      FLog.w(ReactConstants.TAG, "Calling JS function after bridge has been destroyed: " + call);
+      DreamLogs.w(ReactConstants.TAG1, "Calling JS function after bridge has been destroyed: " + call);
       return;
     }
     if (!mAcceptCalls) {
@@ -336,7 +336,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
   @Override
   public void invokeCallback(final int callbackID, final NativeArrayInterface arguments) {
     if (mDestroyed) {
-      FLog.w(ReactConstants.TAG, "Invoking JS callback after bridge has been destroyed.");
+      DreamLogs.w(ReactConstants.TAG1, "Invoking JS callback after bridge has been destroyed.");
       return;
     }
 
@@ -351,7 +351,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
   @Override
   @ThreadConfined(UI)
   public void destroy() {
-    FLog.d(ReactConstants.TAG, "CatalystInstanceImpl.destroy() start");
+    DreamLogs.d(ReactConstants.TAG1, "CatalystInstanceImpl.destroy() start");
     UiThreadUtil.assertOnUiThread();
     if (mDestroyed) {
       return;
@@ -410,8 +410,8 @@ public class CatalystInstanceImpl implements CatalystInstance {
 
                                             mHybridData.resetNative();
                                             getReactQueueConfiguration().destroy();
-                                            FLog.d(
-                                                ReactConstants.TAG,
+                                            DreamLogs.d(
+                                                ReactConstants.TAG1,
                                                 "CatalystInstanceImpl.destroy() end");
                                             ReactMarker.logMarker(
                                                 ReactMarkerConstants.DESTROY_CATALYST_INSTANCE_END);
@@ -437,7 +437,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
   @VisibleForTesting
   @Override
   public void initialize() {
-    FLog.d(ReactConstants.TAG, "CatalystInstanceImpl.initialize()");
+    DreamLogs.d(ReactConstants.TAG1, "CatalystInstanceImpl.initialize()");
     Assertions.assertCondition(
         !mInitialized, "This catalyst instance has already been initialized");
     // We assume that the instance manager blocks on running the JS bundle. If

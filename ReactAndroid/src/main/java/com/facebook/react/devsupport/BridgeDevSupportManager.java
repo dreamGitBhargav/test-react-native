@@ -10,7 +10,7 @@ package com.facebook.react.devsupport;
 import android.content.Context;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.debug.holder.PrinterHolder;
 import com.facebook.debug.tags.ReactDebugOverlayTags;
 import com.facebook.infer.annotation.Assertions;
@@ -164,7 +164,7 @@ public final class BridgeDevSupportManager extends DevSupportManagerBase {
       @Override
       public void onFailure(final Throwable cause) {
         hideDevLoadingView();
-        FLog.e(ReactConstants.TAG, "Failed to connect to debugger!", cause);
+        DreamLogs.e(ReactConstants.TAG1, "Failed to connect to debugger!", cause);
         future.setException(
             new IOException(
                 getApplicationContext().getString(com.facebook.react.R.string.catalyst_debug_error),
@@ -258,8 +258,8 @@ public final class BridgeDevSupportManager extends DevSupportManagerBase {
                 Toast.LENGTH_LONG)
             .show();
       } catch (IOException e) {
-        FLog.e(
-            ReactConstants.TAG,
+        DreamLogs.e(
+            ReactConstants.TAG1,
             "Could not create temporary file for saving results from Sampling Profiler");
       } catch (UnsupportedOperationException e) {
         Toast.makeText(

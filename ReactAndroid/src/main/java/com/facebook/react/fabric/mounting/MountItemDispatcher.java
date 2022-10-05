@@ -9,6 +9,7 @@ package com.facebook.react.fabric.mounting;
 
 import static com.facebook.infer.annotation.ThreadConfined.ANY;
 import static com.facebook.infer.annotation.ThreadConfined.UI;
+import static com.facebook.react.common.ReactConstants.TAG1;
 import static com.facebook.react.fabric.FabricUIManager.ENABLE_FABRIC_LOGS;
 import static com.facebook.react.fabric.FabricUIManager.IS_DEVELOPMENT_ENVIRONMENT;
 
@@ -18,7 +19,7 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.react.bridge.ReactIgnorableMountingException;
 import com.facebook.react.bridge.ReactNoCrashSoftException;
@@ -37,6 +38,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class MountItemDispatcher {
 
   private static final String TAG = "MountItemDispatcher";
+  private static final String TAG2 = TAG1+"MountItemDispatcher";
   private static final int FRAME_TIME_MS = 16;
   private static final int MAX_TIME_IN_FRAME_FOR_NON_BATCHED_OPERATIONS_MS = 8;
 
@@ -81,8 +83,8 @@ public class MountItemDispatcher {
     if (!mMountingManager.surfaceIsStopped(mountItem.getSurfaceId())) {
       mPreMountItems.add(mountItem);
     } else if (IS_DEVELOPMENT_ENVIRONMENT) {
-      FLog.e(
-          TAG,
+      DreamLogs.e(
+        TAG2,
           "Not queueing PreAllocateMountItem: surfaceId stopped: [%d] - %s",
           mountItem.getSurfaceId(),
           mountItem.toString());
@@ -275,7 +277,7 @@ public class MountItemDispatcher {
           executeOrEnqueue(mountItem);
         } catch (Throwable e) {
           // If there's an exception, we want to log diagnostics in prod and rethrow.
-          FLog.e(TAG, "dispatchMountItems: caught exception, displaying mount state", e);
+          DreamLogs.e(TAG2, "dispatchMountItems: caught exception, displaying mount state", e);
           for (MountItem m : mountItemsToDispatch) {
             printMountItem(m, "dispatchMountItems: mountItem");
           }
@@ -340,8 +342,8 @@ public class MountItemDispatcher {
   private void executeOrEnqueue(MountItem item) {
     if (mMountingManager.isWaitingForViewAttach(item.getSurfaceId())) {
       if (ENABLE_FABRIC_LOGS) {
-        FLog.e(
-            TAG,
+        DreamLogs.e(
+          TAG2,
             "executeOrEnqueue: Item execution delayed, surface %s is not ready yet",
             item.getSurfaceId());
       }
@@ -404,7 +406,7 @@ public class MountItemDispatcher {
     // compound MountItem. Log each line separately.
     String[] mountItemLines = mountItem.toString().split("\n");
     for (String m : mountItemLines) {
-      FLog.e(TAG, prefix + ": " + m);
+      DreamLogs.e(TAG2, prefix + ": " + m);
     }
   }
 

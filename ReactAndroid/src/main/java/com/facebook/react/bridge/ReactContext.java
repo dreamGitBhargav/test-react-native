@@ -8,6 +8,7 @@
 package com.facebook.react.bridge;
 
 import static com.facebook.infer.annotation.ThreadConfined.UI;
+import static com.facebook.react.common.ReactConstants.TAG1;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,7 +17,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.react.bridge.queue.MessageQueueThread;
@@ -34,6 +35,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class ReactContext extends ContextWrapper {
 
   private static final String TAG = "ReactContext";
+  private static final String TAG2 = TAG1+"ReactContext";
   private static final String EARLY_JS_ACCESS_EXCEPTION_MESSAGE =
       "Tried to access a JS module before the React instance was fully set up. Calls to "
           + "ReactContext#getJSModule should only happen once initialize() has been called on your "
@@ -91,7 +93,7 @@ public class ReactContext extends ContextWrapper {
 
   /** Initialize message queue threads using a ReactQueueConfiguration. */
   public synchronized void initializeMessageQueueThreads(ReactQueueConfiguration queueConfig) {
-    FLog.w(TAG, "initializeMessageQueueThreads() is called.");
+    DreamLogs.w(TAG, "initializeMessageQueueThreads() is called.");
     if (mUiMessageQueueThread != null
         || mNativeModulesMessageQueueThread != null
         || mJSMessageQueueThread != null) {
@@ -419,8 +421,8 @@ public class ReactContext extends ContextWrapper {
     if (isCatalystInstanceAlive && hasExceptionHandler) {
       mNativeModuleCallExceptionHandler.handleException(e);
     } else {
-      FLog.e(
-          ReactConstants.TAG,
+      DreamLogs.e(
+          TAG1,
           "Unable to handle Exception - catalystInstanceVariableExists: "
               + catalystInstanceVariableExists
               + " - isCatalystInstanceAlive: "

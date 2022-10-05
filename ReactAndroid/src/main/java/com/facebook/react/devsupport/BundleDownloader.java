@@ -7,8 +7,10 @@
 
 package com.facebook.react.devsupport;
 
+import static com.facebook.react.common.ReactConstants.TAG1;
+
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.common.DebugServerException;
 import com.facebook.react.common.ReactConstants;
@@ -33,6 +35,7 @@ import org.json.JSONObject;
 
 public class BundleDownloader {
   private static final String TAG = "BundleDownloader";
+  private static final String TAG2 = TAG1+"BundleDownloader";
 
   // Should be kept in sync with constants in RCTJavaScriptLoader.h
   private static final int FILES_CHANGED_COUNT_NOT_BUILT_BY_BUNDLER = -2;
@@ -57,7 +60,7 @@ public class BundleDownloader {
         info.mUrl = obj.getString("url");
         info.mFilesChangedCount = obj.getInt("filesChangedCount");
       } catch (JSONException e) {
-        FLog.e(TAG, "Invalid bundle info: ", e);
+        DreamLogs.e(TAG2, "Invalid bundle info: ", e);
         return null;
       }
 
@@ -71,7 +74,7 @@ public class BundleDownloader {
         obj.put("url", mUrl);
         obj.put("filesChangedCount", mFilesChangedCount);
       } catch (JSONException e) {
-        FLog.e(TAG, "Can't serialize bundle info: ", e);
+        DreamLogs.e(TAG2, "Can't serialize bundle info: ", e);
         return null;
       }
 
@@ -212,7 +215,7 @@ public class BundleDownloader {
                     }
                     callback.onProgress(status, done, total);
                   } catch (JSONException e) {
-                    FLog.e(ReactConstants.TAG, "Error parsing progress JSON. " + e.toString());
+                    DreamLogs.e(TAG1, "Error parsing progress JSON. " + e.toString());
                   }
                 }
               }

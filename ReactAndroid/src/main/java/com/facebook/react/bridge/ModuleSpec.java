@@ -7,8 +7,10 @@
 
 package com.facebook.react.bridge;
 
+import static com.facebook.react.common.ReactConstants.TAG1;
+
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.react.module.annotations.ReactModule;
 import javax.inject.Provider;
 
@@ -19,6 +21,7 @@ import javax.inject.Provider;
 public class ModuleSpec {
 
   private static final String TAG = "ModuleSpec";
+  private static final String TAG2 = TAG1+"ModuleSpec";
   private final @Nullable Class<? extends NativeModule> mType;
   private final Provider<? extends NativeModule> mProvider;
   private final String mName;
@@ -31,8 +34,8 @@ public class ModuleSpec {
       Class<? extends NativeModule> type, Provider<? extends NativeModule> provider) {
     ReactModule annotation = type.getAnnotation(ReactModule.class);
     if (annotation == null) {
-      FLog.w(
-          TAG,
+      DreamLogs.w(
+        TAG2,
           "Could not find @ReactModule annotation on "
               + type.getName()
               + ". So creating the module eagerly to get the name. Consider adding an annotation to make this Lazy");

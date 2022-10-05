@@ -9,6 +9,7 @@ package com.facebook.react.fabric.mounting;
 
 import static com.facebook.infer.annotation.ThreadConfined.ANY;
 import static com.facebook.infer.annotation.ThreadConfined.UI;
+import static com.facebook.react.common.ReactConstants.TAG1;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,7 @@ import android.view.ViewParent;
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.infer.annotation.ThreadConfined;
 import com.facebook.react.bridge.ReactSoftExceptionLogger;
@@ -53,6 +54,7 @@ import javax.annotation.Nullable;
 
 public class SurfaceMountingManager {
   public static final String TAG = SurfaceMountingManager.class.getSimpleName();
+  public static final String TAG2 = TAG1+SurfaceMountingManager.class.getSimpleName();
 
   private static final boolean SHOW_CHANGED_VIEW_HIERARCHIES = ReactBuildConfig.DEBUG && false;
 
@@ -128,10 +130,10 @@ public class SurfaceMountingManager {
 
   private static void logViewHierarchy(ViewGroup parent, boolean recurse) {
     int parentTag = parent.getId();
-    FLog.e(TAG, "  <ViewGroup tag=" + parentTag + " class=" + parent.getClass().toString() + ">");
+    DreamLogs.e(TAG2, "  <ViewGroup tag=" + parentTag + " class=" + parent.getClass().toString() + ">");
     for (int i = 0; i < parent.getChildCount(); i++) {
-      FLog.e(
-          TAG,
+      DreamLogs.e(
+        TAG2,
           "     <View idx="
               + i
               + " tag="
@@ -140,16 +142,16 @@ public class SurfaceMountingManager {
               + parent.getChildAt(i).getClass().toString()
               + ">");
     }
-    FLog.e(TAG, "  </ViewGroup tag=" + parentTag + ">");
+    DreamLogs.e(TAG2, "  </ViewGroup tag=" + parentTag + ">");
 
     if (recurse) {
-      FLog.e(TAG, "Displaying Ancestors:");
+      DreamLogs.e(TAG2, "Displaying Ancestors:");
       ViewParent ancestor = parent.getParent();
       while (ancestor != null) {
         ViewGroup ancestorViewGroup = (ancestor instanceof ViewGroup ? (ViewGroup) ancestor : null);
         int ancestorId = ancestorViewGroup == null ? View.NO_ID : ancestorViewGroup.getId();
-        FLog.e(
-            TAG,
+        DreamLogs.e(
+          TAG2,
             "<ViewParent tag=" + ancestorId + " class=" + ancestor.getClass().toString() + ">");
         ancestor = ancestor.getParent();
       }
@@ -206,8 +208,8 @@ public class SurfaceMountingManager {
                           + mSurfaceId
                           + "] on the RootView, but that id has already been set. "));
             } else if (rootView.getId() != View.NO_ID) {
-              FLog.e(
-                  TAG,
+              DreamLogs.e(
+                TAG2,
                   "Trying to add RootTag to RootView that already has a tag: existing tag: [%d] new tag: [%d]",
                   rootView.getId(),
                   mSurfaceId);
@@ -326,7 +328,7 @@ public class SurfaceMountingManager {
               + tag
               + " - Index: "
               + index;
-      FLog.e(TAG, message);
+      DreamLogs.e(TAG2, message);
       throw new IllegalStateException(message);
     }
     final ViewGroup parentView = (ViewGroup) parentViewState.mView;
@@ -339,7 +341,7 @@ public class SurfaceMountingManager {
 
     // Display children before inserting
     if (SHOW_CHANGED_VIEW_HIERARCHIES) {
-      FLog.e(TAG, "addViewAt: [" + tag + "] -> [" + parentTag + "] idx: " + index + " BEFORE");
+      DreamLogs.e(TAG2, "addViewAt: [" + tag + "] -> [" + parentTag + "] idx: " + index + " BEFORE");
       logViewHierarchy(parentView, false);
     }
 
@@ -386,7 +388,7 @@ public class SurfaceMountingManager {
           new Runnable() {
             @Override
             public void run() {
-              FLog.e(
+              DreamLogs.e(
                   TAG, "addViewAt: [" + tag + "] -> [" + parentTag + "] idx: " + index + " AFTER");
               logViewHierarchy(parentView, false);
             }
@@ -420,7 +422,7 @@ public class SurfaceMountingManager {
               + tag
               + " - Index: "
               + index;
-      FLog.e(TAG, message);
+      DreamLogs.e(TAG2, message);
       throw new IllegalStateException(message);
     }
 
@@ -432,7 +434,7 @@ public class SurfaceMountingManager {
 
     if (SHOW_CHANGED_VIEW_HIERARCHIES) {
       // Display children before deleting any
-      FLog.e(TAG, "removeViewAt: [" + tag + "] -> [" + parentTag + "] idx: " + index + " BEFORE");
+      DreamLogs.e(TAG2, "removeViewAt: [" + tag + "] -> [" + parentTag + "] idx: " + index + " BEFORE");
       logViewHierarchy(parentView, false);
     }
 
@@ -459,8 +461,8 @@ public class SurfaceMountingManager {
       // backwards-compatibility. Essentially, if a view has already been removed from the
       // hierarchy, we treat it as a noop.
       if (tagActualIndex == -1) {
-        FLog.e(
-            TAG,
+        DreamLogs.e(
+          TAG2,
             "removeViewAt: ["
                 + tag
                 + "] -> ["
@@ -538,8 +540,8 @@ public class SurfaceMountingManager {
           new Runnable() {
             @Override
             public void run() {
-              FLog.e(
-                  TAG,
+              DreamLogs.e(
+                TAG2,
                   "removeViewAt: ["
                       + tag
                       + "] -> ["
@@ -1046,7 +1048,7 @@ public class SurfaceMountingManager {
   }
 
   public void printSurfaceState() {
-    FLog.e(TAG, "Views created for surface {%d}:", getSurfaceId());
+    DreamLogs.e(TAG2, "Views created for surface {%d}:", getSurfaceId());
     for (ViewState viewState : mTagToViewState.values()) {
       String viewManagerName =
           viewState.mViewManager != null ? viewState.mViewManager.getName() : null;
@@ -1054,8 +1056,8 @@ public class SurfaceMountingManager {
       @Nullable View parent = view != null ? (View) view.getParent() : null;
       @Nullable Integer parentTag = parent != null ? parent.getId() : null;
 
-      FLog.e(
-          TAG,
+      DreamLogs.e(
+        TAG2,
           "<%s id=%d parentTag=%s isRoot=%b />",
           viewManagerName,
           viewState.mReactTag,

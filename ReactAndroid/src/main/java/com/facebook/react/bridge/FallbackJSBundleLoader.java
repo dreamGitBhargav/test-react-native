@@ -7,7 +7,7 @@
 
 package com.facebook.react.bridge;
 
-import com.facebook.common.logging.FLog;
+import com.facebook.systrace.DreamLogs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -57,7 +57,7 @@ public final class FallbackJSBundleLoader extends JSBundleLoader {
 
         mLoaders.pop();
         mRecoveredErrors.add(e);
-        FLog.wtf(TAG, "Falling back from recoverable error", e);
+        DreamLogs.wtf(TAG, "Falling back from recoverable error", e);
       }
     }
   }

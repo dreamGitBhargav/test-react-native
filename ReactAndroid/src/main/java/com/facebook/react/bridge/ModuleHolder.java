@@ -14,7 +14,9 @@ import static com.facebook.systrace.Systrace.TRACE_TAG_REACT_JAVA_BRIDGE;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
-import com.facebook.common.logging.FLog;
+
+import com.facebook.react.common.ReactConstants;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.debug.holder.PrinterHolder;
 import com.facebook.debug.tags.ReactDebugOverlayTags;
 import com.facebook.infer.annotation.Assertions;
@@ -209,7 +211,7 @@ public class ModuleHolder {
        *
        * @todo(T53311351)
        */
-      FLog.e("NativeModuleInitError", "Failed to create NativeModule \"" + getName() + "\"", ex);
+      DreamLogs.e(ReactConstants.TAG1, "Failed to create NativeModule \"" + getName() + "\"", ex);
       throw ex;
     } finally {
       ReactMarker.logMarker(CREATE_MODULE_END, mName, mInstanceKey);
