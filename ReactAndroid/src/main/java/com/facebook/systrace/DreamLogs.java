@@ -5,7 +5,7 @@ import android.util.Log;
 public class DreamLogs {
 
   public static void log(String tag, String extraInfo, String threadName, boolean isStartLog, long time) {
-    Log.d("D11CustomLog", "===> name:" + tag + getTag(isStartLog) +
+    Log.d("D11CustomLogManual", "===> name:" + tag + getTag(isStartLog) +
       "===> extraInfo:" + extraInfo + "===> thread:" + threadName + "===> time:" + time);
   }
 
