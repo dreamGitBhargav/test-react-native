@@ -40,7 +40,6 @@ import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Process;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.Nullable;
@@ -104,6 +103,7 @@ import com.facebook.react.uimanager.UIManagerHelper;
 import com.facebook.react.uimanager.ViewManager;
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper;
 import com.facebook.soloader.SoLoader;
+import com.facebook.systrace.DreamLogs;
 import com.facebook.systrace.Systrace;
 import com.facebook.systrace.SystraceMessage;
 import java.lang.reflect.Method;
@@ -238,7 +238,7 @@ public class ReactInstanceManager {
       @Nullable Map<String, RequestHandler> customPackagerCommandHandlers,
       @Nullable ReactPackageTurboModuleManagerDelegate.Builder tmmDelegateBuilder,
       @Nullable SurfaceDelegateFactory surfaceDelegateFactory) {
-    Log.d(TAG1, "ReactInstanceManager.ctor()");
+    DreamLogs.d(TAG1, "ReactInstanceManager.ctor()");
     initializeSoLoaderIfNecessary(applicationContext);
 
     DisplayMetricsHolder.initDisplayMetricsIfNotInitialized(applicationContext);
@@ -346,11 +346,11 @@ public class ReactInstanceManager {
       @Override
       public void destroyRootView(View rootView) {
         // TODO T62192299: remove when investigation is complete
-        Log.e(TAG1, "destroyRootView called");
+        DreamLogs.e(TAG1, "destroyRootView called");
 
         if (rootView instanceof ReactRootView) {
           // TODO T62192299: remove when investigation is complete
-          Log.e(TAG1, "destroyRootView called, unmountReactApplication");
+          DreamLogs.e(TAG1, "destroyRootView called, unmountReactApplication");
 
           ((ReactRootView) rootView).unmountReactApplication();
         }
@@ -389,7 +389,7 @@ public class ReactInstanceManager {
     try {
       handleCxxErrorFunc = ReactInstanceManager.class.getMethod("handleCxxError", parameterTypes);
     } catch (NoSuchMethodException e) {
-      Log.e("ReactInstanceHolder", "Failed to set cxx error hanlder function", e);
+      DreamLogs.e("ReactInstanceHolder", "Failed to set cxx error hanlder function", e);
     }
     ReactCxxErrorHandler.setHandleErrorFunc(this, handleCxxErrorFunc);
   }
@@ -414,7 +414,7 @@ public class ReactInstanceManager {
    */
   @ThreadConfined(UI)
   public void createReactContextInBackground() {
-    Log.d(TAG1, "ReactInstanceManager.createReactContextInBackground()");
+    DreamLogs.d(TAG1, "ReactInstanceManager.createReactContextInBackground()");
     UiThreadUtil
         .assertOnUiThread(); // Assert before setting mHasStartedCreatingInitialContext = true
     if (!mHasStartedCreatingInitialContext) {
@@ -441,7 +441,7 @@ public class ReactInstanceManager {
 
   @ThreadConfined(UI)
   private void recreateReactContextInBackgroundInner() {
-    Log.d(TAG1, "ReactInstanceManager.recreateReactContextInBackgroundInner()");
+    DreamLogs.d(TAG1, "ReactInstanceManager.recreateReactContextInBackgroundInner()");
     PrinterHolder.getPrinter()
         .logMessage(ReactDebugOverlayTags.RN_CORE, "RNCore: recreateReactContextInBackground");
     UiThreadUtil.assertOnUiThread();
@@ -488,7 +488,7 @@ public class ReactInstanceManager {
 
   @ThreadConfined(UI)
   private void recreateReactContextInBackgroundFromBundleLoader() {
-    Log.d(TAG1, "ReactInstanceManager.recreateReactContextInBackgroundFromBundleLoader()");
+    DreamLogs.d(TAG1, "ReactInstanceManager.recreateReactContextInBackgroundFromBundleLoader()");
     PrinterHolder.getPrinter()
         .logMessage(ReactDebugOverlayTags.RN_CORE, "RNCore: load from BundleLoader");
     recreateReactContextInBackground(mJavaScriptExecutorFactory, mBundleLoader);
@@ -511,7 +511,7 @@ public class ReactInstanceManager {
     ReactContext reactContext = mCurrentReactContext;
     if (reactContext == null) {
       // Invoke without round trip to JS.
-      Log.w(TAG1, "Instance detached from instance manager");
+      DreamLogs.w(TAG1, "Instance detached from instance manager");
       invokeDefaultOnBackPressed();
     } else {
       DeviceEventManagerModule deviceEventManagerModule =
@@ -535,7 +535,7 @@ public class ReactInstanceManager {
     UiThreadUtil.assertOnUiThread();
     ReactContext currentContext = getCurrentReactContext();
     if (currentContext == null) {
-      Log.w(TAG1, "Instance detached from instance manager");
+      DreamLogs.w(TAG1, "Instance detached from instance manager");
     } else {
       String action = intent.getAction();
       Uri uri = intent.getData();
@@ -717,7 +717,7 @@ public class ReactInstanceManager {
 
   /** Temporary: due to T67035147, log sources of destroy calls. TODO T67035147: delete */
   private void logOnDestroy() {
-    Log.d(
+    DreamLogs.d(
         TAG1,
         "ReactInstanceManager.destroy called",
         new RuntimeException("ReactInstanceManager.destroy called"));
@@ -732,7 +732,7 @@ public class ReactInstanceManager {
     logOnDestroy();
 
     if (mHasStartedDestroying) {
-      Log.e(
+      DreamLogs.e(
           ReactConstants.TAG1, "ReactInstanceManager.destroy called: bail out, already destroying");
       return;
     }
@@ -769,7 +769,7 @@ public class ReactInstanceManager {
     synchronized (mPackages) {
       mViewManagerNames = null;
     }
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager has been destroyed");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager has been destroyed");
   }
 
   private synchronized void moveToResumedLifecycleState(boolean force) {
@@ -1032,7 +1032,7 @@ public class ReactInstanceManager {
 
   @ThreadConfined(UI)
   private void onReloadWithJSDebugger(JavaJSExecutor.Factory jsExecutorFactory) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.onReloadWithJSDebugger()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.onReloadWithJSDebugger()");
     recreateReactContextInBackground(
         new ProxyJavaScriptExecutor.Factory(jsExecutorFactory),
         JSBundleLoader.createRemoteDebuggerBundleLoader(
@@ -1042,7 +1042,7 @@ public class ReactInstanceManager {
 
   @ThreadConfined(UI)
   private void onJSBundleLoadedFromServer() {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.onJSBundleLoadedFromServer()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.onJSBundleLoadedFromServer()");
 
     JSBundleLoader bundleLoader =
         JSBundleLoader.createCachedBundleFromNetworkLoader(
@@ -1054,7 +1054,7 @@ public class ReactInstanceManager {
   @ThreadConfined(UI)
   private void recreateReactContextInBackground(
       JavaScriptExecutorFactory jsExecutorFactory, JSBundleLoader jsBundleLoader) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.recreateReactContextInBackground()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.recreateReactContextInBackground()");
     UiThreadUtil.assertOnUiThread();
 
     final ReactContextInitParams initParams =
@@ -1068,7 +1068,7 @@ public class ReactInstanceManager {
 
   @ThreadConfined(UI)
   private void runCreateReactContextOnNewThread(final ReactContextInitParams initParams) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.runCreateReactContextOnNewThread()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.runCreateReactContextOnNewThread()");
     UiThreadUtil.assertOnUiThread();
 
     // Mark start of bridge loading
@@ -1138,7 +1138,7 @@ public class ReactInstanceManager {
                             setupReactContext(reactApplicationContext);
                           } catch (Exception e) {
                             // TODO T62192299: remove this after investigation
-                            Log.e(
+                            DreamLogs.e(
                                 ReactConstants.TAG1,
                                 "ReactInstanceManager caught exception in setupReactContext",
                                 e);
@@ -1161,7 +1161,7 @@ public class ReactInstanceManager {
   }
 
   private void setupReactContext(final ReactApplicationContext reactContext) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.setupReactContext()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.setupReactContext()");
     ReactMarker.logMarker(PRE_SETUP_REACT_CONTEXT_END);
     ReactMarker.logMarker(SETUP_REACT_CONTEXT_START);
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "setupReactContext");
@@ -1234,7 +1234,7 @@ public class ReactInstanceManager {
   }
 
   private void attachRootViewToInstance(final ReactRoot reactRoot) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.attachRootViewToInstance()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.attachRootViewToInstance()");
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "attachRootViewToInstance");
 
     @Nullable
@@ -1291,7 +1291,7 @@ public class ReactInstanceManager {
   }
 
   private void detachViewFromInstance(ReactRoot reactRoot, CatalystInstance catalystInstance) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.detachViewFromInstance()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.detachViewFromInstance()");
     UiThreadUtil.assertOnUiThread();
     if (reactRoot.getUIManagerType() == FABRIC) {
       catalystInstance
@@ -1306,7 +1306,7 @@ public class ReactInstanceManager {
 
   @ThreadConfined(UI)
   private void tearDownReactContext(ReactContext reactContext) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.tearDownReactContext()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.tearDownReactContext()");
     UiThreadUtil.assertOnUiThread();
     if (mLifecycleState == LifecycleState.RESUMED) {
       reactContext.onHostPause();
@@ -1329,7 +1329,7 @@ public class ReactInstanceManager {
   /** @return instance of {@link ReactContext} configured a {@link CatalystInstance} set */
   private ReactApplicationContext createReactContext(
       JavaScriptExecutor jsExecutor, JSBundleLoader jsBundleLoader) {
-    Log.d(ReactConstants.TAG1, "ReactInstanceManager.createReactContext()");
+    DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.createReactContext()");
     ReactMarker.logMarker(CREATE_REACT_CONTEXT_START, jsExecutor.getName());
     final ReactApplicationContext reactContext = new ReactApplicationContext(mApplicationContext);
 
