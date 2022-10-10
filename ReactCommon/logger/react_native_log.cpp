@@ -7,6 +7,8 @@
 
 #include "react_native_log.h"
 #include <glog/logging.h>
+#include <chrono>
+#include <thread>
 
 static reactnativelogfunctype _reactnativelogfunc = NULL;
 
@@ -24,6 +26,10 @@ void react_native_log_error(const char *message) {
 }
 void react_native_log_fatal(const char *message) {
   _react_native_log(ReactNativeLogLevelFatal, message);
+}
+
+void react_native_custom_log(const char *message, const char *extraInfo) {
+  LOG(INFO) << "D11CustomLogManual, ===> name:"<< message << "===> extraInfo:" <<extraInfo  << "===> thread:"<< std::this_thread::get_id() << "===> time:" << std::chrono::system_clock::now().time_since_epoch().count();
 }
 
 void _react_native_log(ReactNativeLogLevel level, const char *message) {

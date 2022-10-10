@@ -9,6 +9,7 @@ package com.facebook.react.bridge;
 
 import android.content.Context;
 import com.facebook.react.common.DebugServerException;
+import com.facebook.systrace.DreamLogs;
 
 /**
  * A class that stores JS bundle information and allows a {@link JSBundleLoaderDelegate} (e.g.
@@ -26,7 +27,9 @@ public abstract class JSBundleLoader {
     return new JSBundleLoader() {
       @Override
       public String loadScript(JSBundleLoaderDelegate delegate) {
+        DreamLogs.log("JSBundleLoader.loadScript()", "JSBundleLoader", Thread.currentThread().getName(), true,System.currentTimeMillis());
         delegate.loadScriptFromAssets(context.getAssets(), assetUrl, loadSynchronously);
+        DreamLogs.log("JSBundleLoader.loadScript()", "JSBundleLoader", Thread.currentThread().getName(), true,System.currentTimeMillis());
         return assetUrl;
       }
     };

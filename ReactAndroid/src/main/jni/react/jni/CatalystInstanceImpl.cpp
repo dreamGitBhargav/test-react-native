@@ -275,7 +275,7 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
     bool loadSynchronously) {
   const int kAssetsLength = 9; // strlen("assets://");
   auto sourceURL = assetURL.substr(kAssetsLength);
-
+  react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp jniLoadScriptFromAssets() ScriptTag::MetroHBCBundle");
   auto manager = extractAssetManager(assetManager);
   auto script = loadScriptFromAssets(manager, sourceURL);
   if (JniJSModulesUnbundle::isUnbundle(manager, sourceURL)) {
@@ -290,6 +290,7 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
     instance_->loadScriptFromString(
         std::move(script), sourceURL, loadSynchronously);
   }
+  react_native_custom_log("jniLoadScriptFromFile_end" ,  "CatalystInstanceImpl.cpp jniLoadScriptFromAssets() ScriptTag::MetroHBCBundle");
 }
 
 void CatalystInstanceImpl::jniLoadScriptFromFile(
@@ -303,6 +304,7 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(
 
   switch (getScriptTagFromFile(fileName.c_str())) {
     case ScriptTag::MetroHBCBundle: {
+      react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp getScriptTagFromFile() ScriptTag::MetroHBCBundle");
       std::unique_ptr<const JSBigFileString> script;
       RecoverableError::runRethrowingAsRecoverable<std::system_error>(
           [&fileName, &script]() {
@@ -327,10 +329,12 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(
       break;
     }
     case ScriptTag::RAMBundle:
+      react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp getScriptTagFromFile() ScriptTag::RAMBundle");
       instance_->loadRAMBundleFromFile(fileName, sourceURL, loadSynchronously);
       break;
     case ScriptTag::String:
     default: {
+      react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp getScriptTagFromFile() ScriptTag::String: default");
       std::unique_ptr<const JSBigFileString> script;
       RecoverableError::runRethrowingAsRecoverable<std::system_error>(
           [&fileName, &script]() {
@@ -340,6 +344,7 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(
           std::move(script), sourceURL, loadSynchronously);
     }
   }
+  react_native_custom_log("jniLoadScriptFromFile_end" , "CatalystInstanceImpl.cpp getScriptTagFromFile()");
 }
 
 void CatalystInstanceImpl::jniCallJSFunction(
