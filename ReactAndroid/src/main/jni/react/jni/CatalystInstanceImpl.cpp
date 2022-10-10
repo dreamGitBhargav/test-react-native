@@ -275,7 +275,7 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
     bool loadSynchronously) {
   const int kAssetsLength = 9; // strlen("assets://");
   auto sourceURL = assetURL.substr(kAssetsLength);
-  react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp jniLoadScriptFromAssets() ScriptTag::MetroHBCBundle");
+  react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromAssets_MetroHBCBundle_start");
   auto manager = extractAssetManager(assetManager);
   auto script = loadScriptFromAssets(manager, sourceURL);
   if (JniJSModulesUnbundle::isUnbundle(manager, sourceURL)) {
@@ -290,7 +290,7 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
     instance_->loadScriptFromString(
         std::move(script), sourceURL, loadSynchronously);
   }
-  react_native_custom_log("jniLoadScriptFromFile_end" ,  "CatalystInstanceImpl.cpp jniLoadScriptFromAssets() ScriptTag::MetroHBCBundle");
+  react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromAssets_MetroHBCBundle_end");
 }
 
 void CatalystInstanceImpl::jniLoadScriptFromFile(
@@ -304,7 +304,7 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(
 
   switch (getScriptTagFromFile(fileName.c_str())) {
     case ScriptTag::MetroHBCBundle: {
-      react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp getScriptTagFromFile() ScriptTag::MetroHBCBundle");
+      react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromFile_ScriptTag_MetroHBCBundle_start");
       std::unique_ptr<const JSBigFileString> script;
       RecoverableError::runRethrowingAsRecoverable<std::system_error>(
           [&fileName, &script]() {
@@ -326,15 +326,17 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(
 
         offset += ((moduleLength + 3) & ~3) + 4;
       }
+      react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromFile_ScriptTag_MetroHBCBundle_end");
       break;
     }
     case ScriptTag::RAMBundle:
-      react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp getScriptTagFromFile() ScriptTag::RAMBundle");
+      react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromFile_ScriptTag_RAMBundle_start");
       instance_->loadRAMBundleFromFile(fileName, sourceURL, loadSynchronously);
+      react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromFile_ScriptTag_RAMBundle_end");
       break;
     case ScriptTag::String:
     default: {
-      react_native_custom_log("jniLoadScriptFromFile_start" ,  "CatalystInstanceImpl.cpp getScriptTagFromFile() ScriptTag::String: default");
+      react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromFile_ScriptTag_default_start");
       std::unique_ptr<const JSBigFileString> script;
       RecoverableError::runRethrowingAsRecoverable<std::system_error>(
           [&fileName, &script]() {
@@ -342,9 +344,9 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(
           });
       instance_->loadScriptFromString(
           std::move(script), sourceURL, loadSynchronously);
+      react_native_custom_log("CatalystInstanceImpl.cpp" ,  "jniLoadScriptFromFile_ScriptTag_default_end");
     }
   }
-  react_native_custom_log("jniLoadScriptFromFile_end" , "CatalystInstanceImpl.cpp getScriptTagFromFile()");
 }
 
 void CatalystInstanceImpl::jniCallJSFunction(

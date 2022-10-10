@@ -21,6 +21,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <logger/react_native_log.h>
 
 using namespace facebook::jsi;
 
@@ -156,6 +157,7 @@ void JSIExecutor::loadBundle(
     ReactMarker::logTaggedMarker(
         ReactMarker::RUN_JS_BUNDLE_START, scriptName.c_str());
   }
+  react_native_custom_log("JSIExecutor.cpp" ,  " evaluateJavaScript()_start");
   runtime_->evaluateJavaScript(
       std::make_unique<BigStringBuffer>(std::move(script)), sourceURL);
   flush();
@@ -163,6 +165,7 @@ void JSIExecutor::loadBundle(
     ReactMarker::logTaggedMarker(
         ReactMarker::RUN_JS_BUNDLE_STOP, scriptName.c_str());
   }
+  react_native_custom_log("JSIExecutor.cpp" ,  " evaluateJavaScript()_end");
 }
 
 void JSIExecutor::setBundleRegistry(std::unique_ptr<RAMBundleRegistry> r) {
