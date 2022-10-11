@@ -117,7 +117,7 @@ package-lock.json
 # Additional SDKs
 /sdks/download
 /sdks/hermes
-/sdks/hermesc
+#/sdks/hermesc
 
 # Visual studio
 .vscode
