@@ -22,6 +22,7 @@
 #include "ModuleRegistry.h"
 #include "RAMBundleRegistry.h"
 #include "SystraceSection.h"
+#include <logger/react_native_log.h>
 
 #include <memory>
 
@@ -156,12 +157,14 @@ void NativeToJsBridge::loadBundleSync(
     std::unique_ptr<RAMBundleRegistry> bundleRegistry,
     std::unique_ptr<const JSBigString> startupScript,
     std::string startupScriptSourceURL) {
+    react_native_custom_log("NativeToJsBridge.cpp" ,  "NativeToJsBridge_setBundleRegistry_start");
   if (bundleRegistry) {
     m_executor->setBundleRegistry(std::move(bundleRegistry));
   }
   try {
     m_executor->loadBundle(
         std::move(startupScript), std::move(startupScriptSourceURL));
+      react_native_custom_log("NativeToJsBridge.cpp" ,  "NativeToJsBridge_setBundleRegistry_start");
   } catch (...) {
     m_applicationScriptHasFailure = true;
     throw;

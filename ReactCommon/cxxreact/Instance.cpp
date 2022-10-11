@@ -23,7 +23,7 @@
 #include <folly/json.h>
 
 #include <glog/logging.h>
-
+#include <logger/react_native_log.h>
 #include <condition_variable>
 #include <exception>
 #include <memory>
@@ -85,8 +85,10 @@ void Instance::loadBundleSync(
   m_syncCV.wait(lock, [this] { return m_syncReady; });
 
   SystraceSection s("Instance::loadBundleSync", "sourceURL", sourceURL);
+  react_native_custom_log("Instance.cpp" ,  "Instance.cpp_loadBundleSync_start");
   nativeToJsBridge_->loadBundleSync(
       std::move(bundleRegistry), std::move(string), std::move(sourceURL));
+  react_native_custom_log("Instance.cpp" ,  "Instance.cpp_loadBundleSync_end");
 }
 
 void Instance::setSourceURL(std::string sourceURL) {
