@@ -1285,7 +1285,9 @@ public class ReactInstanceManager {
                   : Arguments.fromBundle(initialProperties),
               reactRoot.getInitialUITemplate());
       reactRoot.setRootViewTag(rootTag);
+      DreamLogs.log(TAG2, "reactRoot.runApplication()",  Thread.currentThread().getName(),true, System.currentTimeMillis());
       reactRoot.runApplication();
+      DreamLogs.log(TAG2, "reactRoot.runApplication()",  Thread.currentThread().getName(),false, System.currentTimeMillis());
     }
 
     Systrace.beginAsyncSection(

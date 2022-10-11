@@ -88,6 +88,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
   }
 
   private static final String TAG = TAG1+"ReactRootView";
+  private static final String TAG2 = "ReactRootView";
   private @Nullable ReactInstanceManager mReactInstanceManager;
   private @Nullable String mJSModuleName;
   private @Nullable Bundle mAppProperties;
@@ -474,7 +475,9 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       ReactInstanceManager reactInstanceManager,
       String moduleName,
       @Nullable Bundle initialProperties) {
+    DreamLogs.log(TAG2,"startReactApplication",Thread.currentThread().getName(), true, System.currentTimeMillis());
     startReactApplication(reactInstanceManager, moduleName, initialProperties, null);
+    DreamLogs.log(TAG2,"startReactApplication",Thread.currentThread().getName(), false, System.currentTimeMillis());
   }
 
   /**
@@ -750,7 +753,9 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
 
       mShouldLogContentAppeared = true;
 
+      DreamLogs.log(TAG2, "catalystInstance.getJSModule(AppRegistry).runApplication(jsAppName,param)",  Thread.currentThread().getName(),true, System.currentTimeMillis());
       catalystInstance.getJSModule(AppRegistry.class).runApplication(jsAppModuleName, appParams);
+      DreamLogs.log(TAG2, "catalystInstance.getJSModule(AppRegistry).runApplication(jsAppName,param)",  Thread.currentThread().getName(),false, System.currentTimeMillis());
     } finally {
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     }
@@ -784,6 +789,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
   private void attachToReactInstanceManager() {
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "attachToReactInstanceManager");
     ReactMarker.logMarker(ReactMarkerConstants.ROOT_VIEW_ATTACH_TO_REACT_INSTANCE_MANAGER_START);
+    DreamLogs.log(TAG2, "rootViewAttachToReactInstanceManager", Thread.currentThread().getName(), true,System.currentTimeMillis());
 
     // React Native requires that the RootView id be managed entirely by React Native, and will
     // crash in addRootView/startSurface if the native View id isn't set to NO_ID.
@@ -814,6 +820,7 @@ public class ReactRootView extends FrameLayout implements RootView, ReactRoot {
       Assertions.assertNotNull(mReactInstanceManager).attachRootView(this);
       getViewTreeObserver().addOnGlobalLayoutListener(getCustomGlobalLayoutListener());
     } finally {
+      DreamLogs.log(TAG2, "rootViewAttachToReactInstanceManager", Thread.currentThread().getName(), false,System.currentTimeMillis());
       ReactMarker.logMarker(ReactMarkerConstants.ROOT_VIEW_ATTACH_TO_REACT_INSTANCE_MANAGER_END);
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
     }
