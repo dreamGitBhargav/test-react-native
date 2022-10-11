@@ -8,6 +8,7 @@
  * @flow
  */
 
+const dreamLog = require('../Utilities/dreamLog');
 const AppContainer = require('./AppContainer');
 import GlobalPerformanceLogger from '../Utilities/GlobalPerformanceLogger';
 import type {IPerformanceLogger} from '../Utilities/createPerformanceLogger';
@@ -37,7 +38,7 @@ function renderApplication<Props: Object>(
   invariant(rootTag, 'Expect to have a valid rootTag, instead got ', rootTag);
 
   const performanceLogger = scopedPerformanceLogger ?? GlobalPerformanceLogger;
-
+dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_start", "")
   let renderable = (
     <PerformanceLoggerContext.Provider value={performanceLogger}>
       <AppContainer
@@ -62,7 +63,7 @@ function renderApplication<Props: Object>(
       </RootComponentWithMeaningfulName>
     );
   }
-
+dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_end", "")
   performanceLogger.startTimespan('renderApplication_React_render');
   performanceLogger.setExtra(
     'usedReactConcurrentRoot',
@@ -77,7 +78,9 @@ function renderApplication<Props: Object>(
       useConcurrentRoot,
     );
   } else {
+  dreamLog("renderApplication.js", "../Renderer/shims/ReactNatives.render_start", "")
     require('../Renderer/shims/ReactNative').render(renderable, rootTag);
+    dreamLog("renderApplication.js", "../Renderer/shims/ReactNatives.render_end", "")
   }
   performanceLogger.stopTimespan('renderApplication_React_render');
 }

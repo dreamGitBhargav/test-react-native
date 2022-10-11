@@ -14,6 +14,7 @@ const ReactNative = require('../Renderer/shims/ReactNative');
 const SceneTracker = require('../Utilities/SceneTracker');
 
 const infoLog = require('../Utilities/infoLog');
+const dreamLog = require('../Utilities/dreamLog');
 const invariant = require('invariant');
 const renderApplication = require('./renderApplication');
 import type {IPerformanceLogger} from '../Utilities/createPerformanceLogger';
@@ -190,6 +191,8 @@ const AppRegistry = {
     appParameters: any,
     displayMode?: number,
   ): void {
+
+    dreamLog("AppRegistry.js", "AppRegistry.js.runApplication()_start", "")
     if (appKey !== 'LogBox') {
       const logParams = __DEV__
         ? '" with ' + JSON.stringify(appParameters)
@@ -211,6 +214,7 @@ const AppRegistry = {
 
     SceneTracker.setActiveScene({name: appKey});
     runnables[appKey].run(appParameters, displayMode);
+    dreamLog("AppRegistry.js", "AppRegistry.js.runApplication()_end", "")
   },
 
   /**
