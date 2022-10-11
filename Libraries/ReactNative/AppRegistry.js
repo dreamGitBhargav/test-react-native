@@ -192,7 +192,7 @@ const AppRegistry = {
     displayMode?: number,
   ): void {
 
-    dreamLog("AppRegistry.js", "AppRegistry.js.runApplication()_start", "")
+    dreamLog("AppRegistry.js", "AppRegistry.js.runApplication()_start", "");
     if (appKey !== 'LogBox') {
       const logParams = __DEV__
         ? '" with ' + JSON.stringify(appParameters)
@@ -214,7 +214,7 @@ const AppRegistry = {
 
     SceneTracker.setActiveScene({name: appKey});
     runnables[appKey].run(appParameters, displayMode);
-    dreamLog("AppRegistry.js", "AppRegistry.js.runApplication()_end", "")
+    dreamLog("AppRegistry.js", "AppRegistry.js.runApplication()_end", "");
   },
 
   /**

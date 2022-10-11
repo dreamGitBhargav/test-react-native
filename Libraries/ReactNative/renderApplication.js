@@ -38,7 +38,7 @@ function renderApplication<Props: Object>(
   invariant(rootTag, 'Expect to have a valid rootTag, instead got ', rootTag);
 
   const performanceLogger = scopedPerformanceLogger ?? GlobalPerformanceLogger;
-dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_start", "")
+dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_start", "");
   let renderable = (
     <PerformanceLoggerContext.Provider value={performanceLogger}>
       <AppContainer
@@ -63,7 +63,7 @@ dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_start
       </RootComponentWithMeaningfulName>
     );
   }
-dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_end", "")
+dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_end", "");
   performanceLogger.startTimespan('renderApplication_React_render');
   performanceLogger.setExtra(
     'usedReactConcurrentRoot',
@@ -78,9 +78,9 @@ dreamLog("renderApplication.js", "renderApplication.js.renderApplication()_end",
       useConcurrentRoot,
     );
   } else {
-  dreamLog("renderApplication.js", "../Renderer/shims/ReactNatives.render_start", "")
+  dreamLog("renderApplication.js", "../Renderer/shims/ReactNatives.render_start", "");
     require('../Renderer/shims/ReactNative').render(renderable, rootTag);
-    dreamLog("renderApplication.js", "../Renderer/shims/ReactNatives.render_end", "")
+    dreamLog("renderApplication.js", "../Renderer/shims/ReactNatives.render_end", "");
   }
   performanceLogger.stopTimespan('renderApplication_React_render');
 }
