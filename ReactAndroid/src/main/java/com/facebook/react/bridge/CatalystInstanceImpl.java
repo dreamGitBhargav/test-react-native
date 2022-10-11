@@ -154,7 +154,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
       warnOnLegacyNativeModuleSystemUse();
     }
 
-    DreamLogs.log("initializeBridge native method",TAG,Thread.currentThread().getName(), true, System.currentTimeMillis());
+    DreamLogs.log(TAG,"initializeBridge native method",Thread.currentThread().getName(), true, System.currentTimeMillis());
     initializeBridge(
         new BridgeCallback(this),
         jsExecutor,
@@ -162,7 +162,7 @@ public class CatalystInstanceImpl implements CatalystInstance {
         mNativeModulesQueueThread,
         mNativeModuleRegistry.getJavaModules(this),
         mNativeModuleRegistry.getCxxModules());
-    DreamLogs.log("initializeBridge native method",TAG,Thread.currentThread().getName(), false, System.currentTimeMillis());
+    DreamLogs.log(TAG,"initializeBridge native method",Thread.currentThread().getName(), false, System.currentTimeMillis());
     DreamLogs.d(ReactConstants.TAG1, "Initializing React Xplat Bridge after initializeBridge");
     Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
 
@@ -248,9 +248,9 @@ public class CatalystInstanceImpl implements CatalystInstance {
   public void loadScriptFromAssets(
       AssetManager assetManager, String assetURL, boolean loadSynchronously) {
     mSourceURL = assetURL;
-    DreamLogs.log("CatalystInstanceImpl native jniLoadScriptFromAssets", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"CatalystInstanceImpl native jniLoadScriptFromAssets", Thread.currentThread().getName(), true,System.currentTimeMillis());
     jniLoadScriptFromAssets(assetManager, assetURL, loadSynchronously);
-    DreamLogs.log("CatalystInstanceImpl native jniLoadScriptFromAssets", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+    DreamLogs.log(TAG,"CatalystInstanceImpl native jniLoadScriptFromAssets", Thread.currentThread().getName(), false,System.currentTimeMillis());
   }
 
   @Override

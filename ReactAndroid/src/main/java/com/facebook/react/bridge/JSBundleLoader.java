@@ -27,9 +27,9 @@ public abstract class JSBundleLoader {
     return new JSBundleLoader() {
       @Override
       public String loadScript(JSBundleLoaderDelegate delegate) {
-        DreamLogs.log("JSBundleLoader.loadScript()", "JSBundleLoader", Thread.currentThread().getName(), true,System.currentTimeMillis());
+        DreamLogs.log("JSBundleLoader","JSBundleLoader.loadScript()", Thread.currentThread().getName(), true,System.currentTimeMillis());
         delegate.loadScriptFromAssets(context.getAssets(), assetUrl, loadSynchronously);
-        DreamLogs.log("JSBundleLoader.loadScript()", "JSBundleLoader", Thread.currentThread().getName(), true,System.currentTimeMillis());
+        DreamLogs.log("JSBundleLoader","JSBundleLoader.loadScript()",  Thread.currentThread().getName(), true,System.currentTimeMillis());
         return assetUrl;
       }
     };

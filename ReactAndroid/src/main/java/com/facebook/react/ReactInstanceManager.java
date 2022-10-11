@@ -415,14 +415,14 @@ public class ReactInstanceManager {
   @ThreadConfined(UI)
   public void createReactContextInBackground() {
     DreamLogs.d(TAG1, "ReactInstanceManager.createReactContextInBackground()");
-    DreamLogs.log("ReactInstanceManager.createReactContextInBackground()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.createReactContextInBackground()" , Thread.currentThread().getName(), true,System.currentTimeMillis());
     UiThreadUtil
         .assertOnUiThread(); // Assert before setting mHasStartedCreatingInitialContext = true
     if (!mHasStartedCreatingInitialContext) {
       mHasStartedCreatingInitialContext = true;
       recreateReactContextInBackgroundInner();
     }
-    DreamLogs.log("ReactInstanceManager.createReactContextInBackground()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.createReactContextInBackground()" , Thread.currentThread().getName(), false,System.currentTimeMillis());
   }
 
   /**
@@ -444,7 +444,7 @@ public class ReactInstanceManager {
   @ThreadConfined(UI)
   private void recreateReactContextInBackgroundInner() {
     DreamLogs.d(TAG1, "ReactInstanceManager.recreateReactContextInBackgroundInner()");
-    DreamLogs.log("ReactInstanceManager.recreateReactContextInBackgroundInner()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.recreateReactContextInBackgroundInner()", Thread.currentThread().getName(), true,System.currentTimeMillis());
     PrinterHolder.getPrinter()
         .logMessage(ReactDebugOverlayTags.RN_CORE, "RNCore: recreateReactContextInBackground");
     UiThreadUtil.assertOnUiThread();
@@ -487,17 +487,17 @@ public class ReactInstanceManager {
     }
 
     recreateReactContextInBackgroundFromBundleLoader();
-    DreamLogs.log("ReactInstanceManager.recreateReactContextInBackgroundInner()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.recreateReactContextInBackgroundInner()", Thread.currentThread().getName(), false,System.currentTimeMillis());
   }
 
   @ThreadConfined(UI)
   private void recreateReactContextInBackgroundFromBundleLoader() {
-    DreamLogs.log("ReactInstanceManager.recreateReactContextInBackground()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.recreateReactContextInBackground()", Thread.currentThread().getName(), true,System.currentTimeMillis());
     DreamLogs.d(TAG1, "ReactInstanceManager.recreateReactContextInBackgroundFromBundleLoader()");
     PrinterHolder.getPrinter()
         .logMessage(ReactDebugOverlayTags.RN_CORE, "RNCore: load from BundleLoader");
     recreateReactContextInBackground(mJavaScriptExecutorFactory, mBundleLoader);
-    DreamLogs.log("ReactInstanceManager.recreateReactContextInBackground()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.recreateReactContextInBackground()", Thread.currentThread().getName(), false,System.currentTimeMillis());
   }
 
   /**
@@ -1075,7 +1075,7 @@ public class ReactInstanceManager {
   @ThreadConfined(UI)
   private void runCreateReactContextOnNewThread(final ReactContextInitParams initParams) {
     DreamLogs.d(ReactConstants.TAG1, "ReactInstanceManager.runCreateReactContextOnNewThread()");
-    DreamLogs.log("ReactInstanceManager.runCreateReactContextOnNewThread()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.runCreateReactContextOnNewThread()", Thread.currentThread().getName(), true,System.currentTimeMillis());
     UiThreadUtil.assertOnUiThread();
 
     // Mark start of bridge loading
@@ -1113,12 +1113,12 @@ public class ReactInstanceManager {
                 try {
                   Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY);
                   ReactMarker.logMarker(VM_INIT);
-                  DreamLogs.log("ReactInstanceManager.createReactContext()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+                  DreamLogs.log(TAG,"ReactInstanceManager.createReactContext()", Thread.currentThread().getName(), true,System.currentTimeMillis());
                   reactApplicationContext =
                       createReactContext(
                           initParams.getJsExecutorFactory().create(),
                           initParams.getJsBundleLoader());
-                  DreamLogs.log("ReactInstanceManager.createReactContext()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+                  DreamLogs.log(TAG,"ReactInstanceManager.createReactContext()", Thread.currentThread().getName(), false,System.currentTimeMillis());
                 } catch (Exception e) {
                   // Reset state and bail out. This lets us try again later.
                   mHasStartedCreatingInitialContext = false;
@@ -1134,10 +1134,10 @@ public class ReactInstanceManager {
                         @Override
                         public void run() {
                           if (mPendingReactContextInitParams != null) {
-                            DreamLogs.log("ReactInstanceManager.runCreateReactContextOnNewThread()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+                            DreamLogs.log(TAG,"ReactInstanceManager.runCreateReactContextOnNewThread()", Thread.currentThread().getName(), true,System.currentTimeMillis());
                             runCreateReactContextOnNewThread(mPendingReactContextInitParams);
                             mPendingReactContextInitParams = null;
-                            DreamLogs.log("ReactInstanceManager.runCreateReactContextOnNewThread()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+                            DreamLogs.log(TAG,"ReactInstanceManager.runCreateReactContextOnNewThread()", Thread.currentThread().getName(), false,System.currentTimeMillis());
                           }
                         }
                       };
@@ -1168,7 +1168,7 @@ public class ReactInstanceManager {
             },
             "create_react_context");
     ReactMarker.logMarker(REACT_CONTEXT_THREAD_START);
-    DreamLogs.log("ReactInstanceManager.runCreateReactContextOnNewThread()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.runCreateReactContextOnNewThread()", Thread.currentThread().getName(), false,System.currentTimeMillis());
     mCreateReactContextThread.start();
   }
 
@@ -1360,7 +1360,7 @@ public class ReactInstanceManager {
             .setRegistry(nativeModuleRegistry)
             .setJSBundleLoader(jsBundleLoader)
             .setNativeModuleCallExceptionHandler(exceptionHandler);
-    DreamLogs.log("ReactInstanceManager.catalystInstanceBuilder()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.catalystInstanceBuilder()", Thread.currentThread().getName(), true,System.currentTimeMillis());
     ReactMarker.logMarker(CREATE_CATALYST_INSTANCE_START);
     // CREATE_CATALYST_INSTANCE_END is in JSCExecutor.cpp
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "createCatalystInstance");
@@ -1369,7 +1369,7 @@ public class ReactInstanceManager {
       catalystInstance = catalystInstanceBuilder.build();
     } finally {
       Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
-      DreamLogs.log("ReactInstanceManager.catalystInstanceBuilder()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+      DreamLogs.log(TAG,"ReactInstanceManager.catalystInstanceBuilder()", Thread.currentThread().getName(), false,System.currentTimeMillis());
       ReactMarker.logMarker(CREATE_CATALYST_INSTANCE_END);
     }
 
@@ -1416,9 +1416,9 @@ public class ReactInstanceManager {
 
     ReactMarker.logMarker(ReactMarkerConstants.PRE_RUN_JS_BUNDLE_START);
     Systrace.beginSection(TRACE_TAG_REACT_JAVA_BRIDGE, "runJSBundle");
-    DreamLogs.log("ReactInstanceManager.catalystInstance.runJSBundle()", TAG, Thread.currentThread().getName(), true,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.catalystInstance.runJSBundle()", Thread.currentThread().getName(), true,System.currentTimeMillis());
     catalystInstance.runJSBundle();
-    DreamLogs.log("ReactInstanceManager.catalystInstance.runJSBundle()", TAG, Thread.currentThread().getName(), false,System.currentTimeMillis());
+    DreamLogs.log(TAG,"ReactInstanceManager.catalystInstance.runJSBundle()", Thread.currentThread().getName(), false,System.currentTimeMillis());
     Systrace.endSection(TRACE_TAG_REACT_JAVA_BRIDGE);
 
     return reactContext;
